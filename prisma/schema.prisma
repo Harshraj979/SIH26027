@@ -1,0 +1,263 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+
+// ─── CORRIDOR & GEOGRAPHY ─────────────────────────────────────────────────────
+
+model Corridor {
+  id          String    @id @default(cuid())
+  name        String
+  divisionCode String
+  zoneCode    String
+  totalKm     Float
+  createdAt   DateTime  @default(now())
+
+  stations    Station[]
+  tracks      Track[]
+}
+
+model Station {
+  id          String    @id @default(cuid())
+  code        String    @unique  // e.g. "NDLS", "LDH"
+  name        String
+  chainage    Float              // distance from origin in km
+  zone        String
+  division    String
+  latitude    Float?
+  longitude   Float?
+  provenance  String    @default("AUTHORITATIVE")
+
+  corridorId  String
+  corridor    Corridor  @relation(fields: [corridorId], references: [id])
+
+  upArrivalMin  Int?
+  dnArrivalMin  Int?
+
+  trainStops  TrainStop[]
+}
+
+model Track {
+  id          String    @id @default(cuid())
+  trackId     String             // "UP" | "DN" | "UP_GOODS"
+  kmFrom      Float
+  kmTo        Float
+  trackType   String    @default("MAIN")  // MAIN | LOOP | GOODS
+  maxSpeedKmh Int       @default(160)
+
+  corridorId  String
+  corridor    Corridor  @relation(fields: [corridorId], references: [id])
+
+  workOrders  WorkOrder[]
+}
+
+// ─── ROLLING STOCK & TIMETABLE ────────────────────────────────────────────────
+
+model Train {
+  id          String    @id @default(cuid())
+  number      String    @unique
+  name        String
+  priority    Int                // 1=VIP, 2=Mail/SF, 3=Commuter, 4=Freight
+  trainType   String             // VANDE_BHARAT | SHATABDI | MAIL_EXPRESS | MEMU | FREIGHT
+  rakeType    String             // EMU | LHB | ICF | BOXN | FLATBED
+  maxSpeedKmh Int
+  direction   String             // UP | DN | BOTH
+  isActive    Boolean   @default(true)
+  provenance  String    @default("AUTHORITATIVE")
+
+  stops       TrainStop[]
+  perturbations TrainPerturbation[]
+}
+
+model TrainStop {
+  id            String    @id @default(cuid())
+  sequence      Int
+  arrivalMin    Int?               // minutes from midnight
+  departureMin  Int?
+  arrivalHHMM   String?
+  departureHHMM String?
+  haltMinutes   Int       @default(0)
+  isOrigin      Boolean   @default(false)
+  isDestination Boolean   @default(false)
+  platform      String?
+
+  trainId     String
+  train       Train    @relation(fields: [trainId], references: [id])
+
+  stationId   String
+  station     Station  @relation(fields: [stationId], references: [id])
+}
+
+// ─── WORK ORDERS (MAINTENANCE DEMANDS) ───────────────────────────────────────
+
+model WorkOrder {
+  id                String    @id @default(cuid())
+  department        String             // TMS | SMMS | TDMS
+  description       String
+  kmFrom            Float
+  kmTo              Float
+  durationMinutes   Int
+  priority          Int       @default(2)  // 1=Critical, 2=High, 3=Medium
+  status            String    @default("PENDING") // PENDING | SCHEDULED | COMPLETED | CANCELLED
+  requestedDate     DateTime
+  completedDate     DateTime?
+
+  // ML Risk Scoring inputs
+  overdueDays       Int       @default(0)
+  cumulativeGmt     Float     @default(0)   // Gross Metric Tonnes
+  tqiScore          Float     @default(70)  // Track Quality Index (0-100)
+
+  // ML scoring outputs
+  assetRisk         Float?
+  penaltyWeight     Int?
+
+  // Shadow block flag
+  isShadowBlock     Boolean   @default(false)
+  parentClusterId   String?
+
+  provenance        String    @default("LIVE")
+
+  trackId   String
+  track     Track     @relation(fields: [trackId], references: [id])
+
+  scheduledBlocks ScheduledBlock[]
+}
+
+model ScheduledBlock {
+  id                String    @id @default(cuid())
+  startMin          Int                // minutes from midnight
+  endMin            Int
+  startHHMM         String
+  endHHMM           String
+  durationMinutes   Int
+  isShadowBlock     Boolean   @default(false)
+  departments       String             // JSON array serialized
+  status            String    @default("APPROVED")
+  planDate          DateTime
+  provenance        String    @default("MODELED")
+  createdAt         DateTime  @default(now())
+
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+}
+
+// ─── EVENTS (Perturbations) ───────────────────────────────────────────────────
+
+model OperationalEvent {
+  id          String    @id @default(cuid())
+  eventType   String             // FOG | SIGNAL_FAILURE | DERAILMENT | SPEED_RESTRICTION | DELAY
+  description String
+  severity    String    @default("CAUTION")  // CRITICAL | CAUTION | INFO
+  kmFrom      Float?
+  kmTo        Float?
+  startMin    Int?
+  endMin      Int?
+  delayMinutes Int      @default(0)
+  affectedTrains String?          // JSON array of train numbers
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+  provenance  String    @default("LIVE")
+}
+
+// ─── TRAIN PERTURBATIONS (Solver Output) ─────────────────────────────────────
+
+model TrainPerturbation {
+  id                String    @id @default(cuid())
+  stationCode       String
+  originalDeparture String?
+  delayMinutes      Int
+  cause             String
+  planDate          DateTime
+  createdAt         DateTime  @default(now())
+
+  trainId   String
+  train     Train    @relation(fields: [trainId], references: [id])
+}
+
+// ─── DIGITAL TWIN KNOWLEDGE GRAPH ──────────────────────────────────────────
+
+model AssetNode {
+  id          String   @id @default(cuid())
+  assetCode   String   @unique  // e.g. "SIG-UMB-42", "OHE-FEEDER-RPJ", "XOVER-PNP-01"
+  name        String
+  assetType   String            // TRACK_SEGMENT | SIGNAL | OHE_FEEDER | CROSSOVER | STATION
+  kmFrom      Float
+  kmTo        Float
+  trackId     String   @default("UP")  // UP | DN | BOTH
+  status      String   @default("OPERATIONAL") // OPERATIONAL | DEGRADED | UNDER_BLOCK | ISOLATED
+  division    String   @default("DLI")
+  zone        String   @default("NR")
+  metadata    String?           // JSON details (e.g. voltage, signal aspect, tamping history)
+  createdAt   DateTime @default(now())
+
+  outgoingDeps AssetDependency[] @relation("SourceAsset")
+  incomingDeps AssetDependency[] @relation("TargetAsset")
+}
+
+model AssetDependency {
+  id              String    @id @default(cuid())
+  dependencyType  String    // ELECTRICAL_ISOLATION | PHYSICAL_ADJACENCY | TRAFFIC_INTERLOCK | SLW_CROSSOVER
+  description     String
+  sourceAssetId   String
+  targetAssetId   String
+
+  sourceAsset     AssetNode @relation("SourceAsset", fields: [sourceAssetId], references: [id])
+  targetAsset     AssetNode @relation("TargetAsset", fields: [targetAssetId], references: [id])
+}
+
+// ─── MULTI-AGENT BIDDING & ARBITRATION ─────────────────────────────────────
+
+model AgentBid {
+  id              String   @id @default(cuid())
+  department      String   // ENGG_TMS | ST_SMMS | TRD_TDMS | OPS_COA
+  agentName       String
+  workOrderId     String?
+  targetKmFrom    Float
+  targetKmTo      Float
+  durationMinutes Int
+  urgencyScore    Float    // 0 to 100
+  utilityWeight   Float    // dynamic bidding stake
+  bidDetails      String   // JSON: failureProbability, trafficDensity, weatherMultiplier, consequence
+  crossDepsNeeded String?  // JSON array of required asset codes (e.g. OHE power cutoff)
+  status          String   @default("PENDING") // PENDING | ACCEPTED | CONCESSION_ADJUSTED | DEFERRED
+  concessionNotes String?
+  planDate        DateTime
+  createdAt       DateTime @default(now())
+}
+
+model ArbitrationLog {
+  id                         String   @id @default(cuid())
+  planDate                   DateTime
+  totalBidsReceived          Int
+  bundledBlocksCount         Int
+  arbitrationRounds          Int      @default(1)
+  naturalLanguageJustification String // XAI natural-language justification trail
+  compromiseMetrics          String   // JSON: departmental satisfaction indices
+  createdAt                  DateTime @default(now())
+}
+
+// ─── EXECUTION FEEDBACK LOOP (Field PWA) ───────────────────────────────────
+
+model ExecutionLog {
+  id                String   @id @default(cuid())
+  workOrderId       String?
+  blockDescription  String
+  plannedStartMin   Int
+  plannedEndMin     Int
+  actualStartMin    Int
+  actualEndMin      Int
+  overrunMinutes    Int      @default(0)
+  overrunReason     String   @default("NONE") // WEATHER_MONSOON | MACHINERY_FAILURE | DISPATCH_HOLD | CREW_DELAY | NONE
+  notes             String?
+  loggedByEngineer  String   @default("SSE/P-Way/UMB")
+  createdAt         DateTime @default(now())
+}
+
