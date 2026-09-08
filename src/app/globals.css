@@ -1,31 +1,113 @@
 @import "tailwindcss";
 
-/* Force dark baseline */
-:root { color-scheme: dark; }
+/* ── Indian Government Portal — Design System ─────────────────────────────── */
 
-/* JetBrains Mono for monospace contexts */
-.font-mono {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+:root {
+  /* Indian Railways / Gov palette */
+  --gov-navy:        #003087;
+  --gov-navy-mid:    #1a3c6e;
+  --gov-saffron:     #FF9933;
+  --gov-green:       #138808;
+  --gov-white:       #ffffff;
+  --gov-bg:          #f4f6f9;
+  --gov-bg-card:     #ffffff;
+  --gov-border:      #d0d7e3;
+  --gov-text:        #1a1a2e;
+  --gov-text-muted:  #555f7a;
+  --gov-text-light:  #8492a6;
+
+  /* Status colours — light mode */
+  --status-ok-bg:   #ecfdf5;
+  --status-ok-text: #166534;
+  --status-ok-border: #bbf7d0;
+
+  --status-warn-bg:   #fffbeb;
+  --status-warn-text: #92400e;
+  --status-warn-border: #fcd34d;
+
+  --status-err-bg:   #fef2f2;
+  --status-err-text: #991b1b;
+  --status-err-border: #fca5a5;
 }
 
-/* Scrollbar styling */
+/* Force light mode — no dark mode override */
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--gov-bg);
+  color: var(--gov-text);
+  font-family: 'Noto Sans', 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar — light style ──────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #111827;
+  background: #e8edf4;
 }
 ::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 2px;
+  background: #b0bfd4;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4B5563;
+  background: #1a3c6e;
 }
 
-/* Prevent text selection on canvas interactions */
-canvas {
-  user-select: none;
-  -webkit-user-select: none;
+/* ── Gov utility classes ──────────────────────────────────────────────────── */
+.gov-section-header {
+  @apply text-xs font-bold uppercase tracking-widest text-[#1a3c6e] border-b border-[#d0d7e3] pb-1.5 mb-3;
 }
+
+.gov-card {
+  @apply bg-white border border-[#d0d7e3] rounded shadow-sm;
+}
+
+.gov-btn-primary {
+  @apply bg-[#1a3c6e] hover:bg-[#14305a] disabled:bg-gray-400 text-white text-sm font-semibold px-4 py-2 rounded transition-colors;
+}
+
+.gov-btn-secondary {
+  @apply bg-white hover:bg-gray-50 border border-[#d0d7e3] text-[#1a3c6e] text-sm font-semibold px-4 py-2 rounded transition-colors;
+}
+
+.gov-btn-danger {
+  @apply bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded transition-colors;
+}
+
+.gov-input {
+  @apply w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:border-[#1a3c6e] focus:ring-1 focus:ring-[#1a3c6e];
+}
+
+.gov-table {
+  @apply w-full text-sm border-collapse;
+}
+.gov-table th {
+  @apply px-3 py-2 text-left text-xs font-bold text-[#1a3c6e] bg-[#eef2f9] border-b border-[#d0d7e3] uppercase tracking-wider;
+}
+.gov-table td {
+  @apply px-3 py-2 text-gray-800 border-b border-gray-100;
+}
+.gov-table tr:hover td {
+  @apply bg-blue-50;
+}
+
+/* ── Tab nav — gov style ──────────────────────────────────────────────────── */
+.gov-tab {
+  @apply px-4 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-[#1a3c6e] hover:border-[#1a3c6e] transition-colors cursor-pointer whitespace-nowrap;
+}
+.gov-tab-active {
+  @apply text-[#1a3c6e] border-[#FF9933] font-bold;
+}
+
+/* ── Status badges ────────────────────────────────────────────────────────── */
+.badge-ok      { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-green-100 text-green-800 border border-green-300; }
+.badge-warn    { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300; }
+.badge-err     { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-300; }
+.badge-neutral { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-300; }
+.badge-info    { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300; }
