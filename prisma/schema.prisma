@@ -244,6 +244,21 @@ model ArbitrationLog {
   createdAt                  DateTime @default(now())
 }
 
+// ─── RBAC USER ACCOUNTS ──────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  employeeId   String    @unique          // e.g. "ADMIN001", "DRM001"
+  name         String
+  role         String                     // SYSTEM_ADMIN | DRM | OBSERVER
+  designation  String
+  division     String    @default("DLI")
+  passwordHash String    @default("")     // bcrypt in production; plain for demo
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  lastLogin    DateTime?
+}
+
 // ─── EXECUTION FEEDBACK LOOP (Field PWA) ───────────────────────────────────
 
 model ExecutionLog {
