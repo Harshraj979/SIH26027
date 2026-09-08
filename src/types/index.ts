@@ -169,7 +169,7 @@ export interface DigitalTwinAssetData {
   trackId:      string;
   status:       string;
   metadata?:    Record<string, unknown>;
-  dependencies?: {
+  dependencies: {
     type:        string;
     targetCode:  string;
     description: string;
