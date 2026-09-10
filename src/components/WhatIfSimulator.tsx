@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WhatIfSimulator — Interactive Section Controller Simulator
+ * WhatIfSimulator — Interactive Section Controller Simulator (Light Gov Theme)
  * Implements SIH26027 Differentiator:
  *   "A 'what-if' simulator lets a Section Controller drag/adjust a goods-train
  *   path or weather alert and instantly see which maintenance blocks become
@@ -9,7 +9,7 @@
  */
 
 import React, { useState } from "react";
-import type { Train, ScheduledBlock, TrainPerturbation } from "@/types";
+import type { Train, ScheduledBlock } from "@/types";
 
 interface Props {
   isOpen: boolean;
@@ -54,51 +54,53 @@ export default function WhatIfSimulator({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl bg-[#0B0F17] border border-slate-700 rounded-lg shadow-2xl flex flex-col overflow-hidden font-sans">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div className="w-full max-w-2xl bg-white border border-gray-300 rounded-lg shadow-2xl flex flex-col overflow-hidden font-sans">
         
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#111827]">
+        {/* Header — Gov Navy */}
+        <div className="flex items-center justify-between px-6 py-3.5 bg-[#1a3c6e] text-white border-b border-blue-900">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-amber-950 border border-amber-700 flex items-center justify-center text-amber-400 font-bold text-sm">
+            <div className="w-8 h-8 rounded bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 font-bold text-sm">
               ⚡
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-100 tracking-wide">
+              <h2 className="text-sm font-bold tracking-wide">
                 DISPATCH CONTROLLER "WHAT-IF" SCENARIO SIMULATOR
               </h2>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">
+              <p className="text-xs text-blue-200 font-mono mt-0.5">
                 Simulate Goods Train Re-Paths, Monsoon Alerts, and Single-Line Working (SLW)
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 text-lg font-mono px-2"
+            className="text-blue-200 hover:text-white text-lg font-mono px-2 cursor-pointer"
           >
             ✕
           </button>
         </div>
 
         {/* Simulator Controls */}
-        <div className="p-6 space-y-5 text-xs font-mono">
+        <div className="p-6 space-y-4 text-xs font-mono bg-white">
           
           {/* Scenario 1: Goods Train Path Rescheduling */}
-          <div className="p-4 rounded border border-slate-800 bg-slate-900/60 space-y-3">
+          <div className="p-4 rounded-lg border border-gray-200 bg-[#F8FAFC] space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-200 uppercase tracking-wide">
+              <span className="font-bold text-[#1a3c6e] uppercase tracking-wide">
                 1. RESCHEDULE FREIGHT / GOODS TRAIN PATH
               </span>
-              <span className="text-[10px] text-amber-400">Dynamic Slot Shift</span>
+              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded">
+                Dynamic Slot Shift
+              </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] text-slate-500 block mb-1">Target Freight Rake</label>
+                <label className="text-[10px] font-semibold text-gray-600 block mb-1">Target Freight Rake</label>
                 <select
                   value={selectedTrain}
                   onChange={(e) => setSelectedTrain(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 text-xs"
+                  className="w-full bg-white border border-gray-300 rounded px-3 py-1.5 text-gray-900 text-xs focus:outline-none focus:border-[#1a3c6e]"
                 >
                   {freightTrains.map((t) => (
                     <option key={t.number} value={t.number}>
@@ -109,8 +111,8 @@ export default function WhatIfSimulator({
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-500 block mb-1">
-                  Reschedule Offset: <span className="text-amber-400 font-bold">+{shiftMinutes} min</span>
+                <label className="text-[10px] font-semibold text-gray-600 block mb-1">
+                  Reschedule Offset: <span className="text-amber-700 font-bold">+{shiftMinutes} min</span>
                 </label>
                 <input
                   type="range"
@@ -119,9 +121,9 @@ export default function WhatIfSimulator({
                   step="15"
                   value={shiftMinutes}
                   onChange={(e) => setShiftMinutes(parseInt(e.target.value))}
-                  className="w-full accent-emerald-500 cursor-pointer"
+                  className="w-full accent-[#1a3c6e] cursor-pointer"
                 />
-                <div className="flex justify-between text-[9px] text-slate-600 mt-1">
+                <div className="flex justify-between text-[9px] text-gray-400 mt-1">
                   <span>+15m</span>
                   <span>+60m</span>
                   <span>+120m</span>
@@ -133,64 +135,64 @@ export default function WhatIfSimulator({
 
           {/* Scenario 2: Weather & Single-Line Working Toggles */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded border border-slate-800 bg-slate-900/60 space-y-2">
-              <span className="font-bold text-slate-200 block">2. MONSOON MOISTURE ALERT</span>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
+            <div className="p-4 rounded-lg border border-gray-200 bg-[#F8FAFC] space-y-1.5">
+              <span className="font-bold text-gray-900 block text-xs">2. MONSOON MOISTURE ALERT</span>
+              <p className="text-[10px] text-gray-600 leading-relaxed">
                 Applies +40% fracture hazard multiplier to Engineering Agent track priority function.
               </p>
-              <label className="flex items-center gap-2 text-slate-300 pt-1 cursor-pointer">
+              <label className="flex items-center gap-2 text-gray-800 pt-1 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={monsoonAlert}
                   onChange={(e) => setMonsoonAlert(e.target.checked)}
-                  className="rounded border-slate-700 text-emerald-500"
+                  className="rounded border-gray-300 text-[#1a3c6e] focus:ring-0 cursor-pointer"
                 />
-                <span>Active Monsoon Season</span>
+                <span className="font-semibold text-xs">Active Monsoon Season</span>
               </label>
             </div>
 
-            <div className="p-4 rounded border border-slate-800 bg-slate-900/60 space-y-2">
-              <span className="font-bold text-slate-200 block">3. SINGLE-LINE WORKING (SLW)</span>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
+            <div className="p-4 rounded-lg border border-gray-200 bg-[#F8FAFC] space-y-1.5">
+              <span className="font-bold text-gray-900 block text-xs">3. SINGLE-LINE WORKING (SLW)</span>
+              <p className="text-[10px] text-gray-600 leading-relaxed">
                 Route opposing traffic over adjacent track via crossovers with 15-minute headway buffer.
               </p>
-              <label className="flex items-center gap-2 text-slate-300 pt-1 cursor-pointer">
+              <label className="flex items-center gap-2 text-gray-800 pt-1 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={forceSLW}
                   onChange={(e) => setForceSLW(e.target.checked)}
-                  className="rounded border-slate-700 text-emerald-500"
+                  className="rounded border-gray-300 text-[#1a3c6e] focus:ring-0 cursor-pointer"
                 />
-                <span>Enable Crossover Routing</span>
+                <span className="font-semibold text-xs">Enable Crossover Routing</span>
               </label>
             </div>
           </div>
 
-          {/* Impact preview */}
-          <div className="p-3 bg-emerald-950/20 border border-emerald-800/40 rounded text-[11px] text-slate-300 leading-relaxed">
-            <span className="font-bold text-emerald-400">Live Prediction: </span>
-            Rescheduling <span className="font-mono text-white">{selectedTrain}</span> by +{shiftMinutes} min will conflict with 
-            maintenance block windows at UMB–RPJ. The Arbitration Agent will automatically negotiate with the Engineering Agent to shift track machine possession by 45 min and route Paschim SF Express via Single-Line Working.
+          {/* Impact preview callout */}
+          <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-lg text-[11px] text-emerald-950 leading-relaxed">
+            <span className="font-bold text-emerald-800">Live Impact Estimation: </span>
+            Rescheduling <span className="font-bold text-gray-900">{selectedTrain}</span> by +{shiftMinutes} min will conflict with 
+            maintenance block windows at UMB–RPJ. The Arbitration Agent will negotiate with the Engineering Agent to shift track machine possession by 45 min and route passenger traffic via Single-Line Working.
           </div>
 
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-800 bg-[#111827]">
-          <span className="text-[10px] font-mono text-slate-500">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-[#F8FAFC]">
+          <span className="text-[10px] font-mono text-gray-500">
             Real-time constraint re-evaluation in &lt; 3 seconds
           </span>
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             <button
               onClick={onClose}
-              className="px-4 py-1.5 border border-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors font-mono"
+              className="px-4 py-1.5 border border-gray-300 text-gray-700 hover:bg-gray-100 rounded text-xs font-semibold transition-colors font-mono cursor-pointer"
             >
               Cancel
             </button>
             <button
               disabled={isSimulating}
               onClick={handleSimulate}
-              className="px-5 py-1.5 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white rounded text-xs font-semibold transition-colors font-mono flex items-center gap-2"
+              className="px-5 py-1.5 bg-[#1a3c6e] hover:bg-[#14305a] disabled:opacity-50 text-white rounded text-xs font-semibold transition-colors font-mono flex items-center gap-2 cursor-pointer shadow-xs"
             >
               {isSimulating ? (
                 <>

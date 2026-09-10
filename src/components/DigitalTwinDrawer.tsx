@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * DigitalTwinDrawer — Visual Corridor Knowledge Graph
+ * DigitalTwinDrawer — Visual Corridor Knowledge Graph (Light Gov Theme)
  * Displays geo-tagged corridor assets (Tracks, Signals, OHE Feeders, Crossovers)
  * and physical/electrical cross-asset dependencies along NDLS–LDH (312 km).
  */
@@ -31,40 +31,40 @@ export default function DigitalTwinDrawer({
     : assets.filter((a) => a.assetType === filterType);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-xl bg-[#0B0F17] border-l border-slate-700 h-full flex flex-col shadow-2xl font-sans">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs">
+      <div className="w-full max-w-xl bg-white border-l border-gray-300 h-full flex flex-col shadow-2xl font-sans">
         
-        {/* Header */}
-        <div className="p-5 border-b border-slate-800 bg-[#111827] flex items-center justify-between">
+        {/* Header — Gov Navy */}
+        <div className="p-4 bg-[#1a3c6e] text-white border-b border-blue-900 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <h2 className="text-sm font-bold text-slate-100 tracking-wide">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <h2 className="text-sm font-bold tracking-wide">
                 CORRIDOR DIGITAL TWIN KNOWLEDGE GRAPH
               </h2>
             </div>
-            <p className="text-xs text-slate-500 font-mono mt-0.5">
+            <p className="text-xs text-blue-200 font-mono mt-0.5">
               Northern Railway Mainline · New Delhi (0 km) to Ludhiana Jn (312 km)
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 text-lg font-mono px-2"
+            className="text-blue-200 hover:text-white text-lg font-mono px-2 cursor-pointer"
           >
             ✕
           </button>
         </div>
 
         {/* Filter Chips */}
-        <div className="flex gap-2 px-5 py-3 border-b border-slate-800 bg-[#0B0F17] text-xs font-mono overflow-x-auto">
+        <div className="flex gap-2 px-4 py-2.5 border-b border-gray-200 bg-[#F8FAFC] text-xs font-mono overflow-x-auto">
           {["ALL", "CROSSOVER", "OHE_FEEDER", "SIGNAL"].map((type) => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-3 py-1 rounded text-[11px] transition-colors ${
+              className={`px-3 py-1 rounded text-[11px] transition-colors cursor-pointer ${
                 filterType === type
-                  ? "bg-slate-700 text-emerald-400 font-bold"
-                  : "bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800"
+                  ? "bg-[#1a3c6e] text-white font-bold shadow-xs"
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
               }`}
             >
               {type}
@@ -73,13 +73,13 @@ export default function DigitalTwinDrawer({
         </div>
 
         {/* Corridor Topological Strip */}
-        <div className="px-5 py-3 border-b border-slate-800 bg-slate-950/80">
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">
+        <div className="px-5 py-3 border-b border-gray-200 bg-white">
+          <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 font-semibold">
             Topology Chainage Bar (312 km)
           </div>
-          <div className="relative h-6 bg-slate-900 rounded border border-slate-800 flex items-center px-1">
+          <div className="relative h-7 bg-[#F1F5F9] rounded border border-gray-300 flex items-center px-1">
             {stations.map((s) => {
-              const pct = (s.chainage / 312) * 96;
+              const pct = (s.chainage / 312) * 94;
               return (
                 <div
                   key={s.code}
@@ -87,8 +87,8 @@ export default function DigitalTwinDrawer({
                   className="absolute flex flex-col items-center group cursor-pointer"
                   style={{ left: `${pct}%` }}
                 >
-                  <div className="w-1.5 h-3 bg-emerald-500 rounded-sm" />
-                  <span className="text-[8px] font-mono text-slate-400 -mt-0.5">
+                  <div className="w-1.5 h-3.5 bg-emerald-600 rounded-xs" />
+                  <span className="text-[8px] font-mono text-gray-600 font-bold -mt-0.5">
                     {s.code}
                   </span>
                 </div>
@@ -97,52 +97,52 @@ export default function DigitalTwinDrawer({
           </div>
         </div>
 
-        {/* Asset Cards */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-3">
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+        {/* Asset Cards List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#F8FAFC]">
+          <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest font-bold">
             Geo-Tagged Infrastructure Nodes ({filteredAssets.length})
           </div>
 
           {filteredAssets.map((asset) => {
             const isCrossover = asset.assetType === "CROSSOVER";
-            const isOHE = asset.assetType === "OHE_FEEDER";
-            const isSignal = asset.assetType === "SIGNAL";
+            const isOHE       = asset.assetType === "OHE_FEEDER";
+            const isSignal    = asset.assetType === "SIGNAL";
 
             return (
               <div
                 key={asset.assetCode}
-                className="p-3.5 rounded border border-slate-800 bg-slate-900/50 hover:bg-slate-900 transition-colors text-xs font-mono space-y-1.5"
+                className="p-3.5 rounded-lg border border-gray-200 bg-white hover:border-[#1a3c6e] transition-colors text-xs font-mono space-y-2 shadow-xs"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm">
+                    <span className="text-base">
                       {isCrossover ? "🔀" : isOHE ? "⚡" : isSignal ? "🚥" : "📦"}
                     </span>
-                    <span className="font-bold text-slate-200">{asset.name}</span>
+                    <span className="font-bold text-gray-900">{asset.name}</span>
                   </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-300">
                     {asset.assetCode}
                   </span>
                 </div>
 
-                <div className="flex gap-4 text-[10px] text-slate-400 pt-0.5">
-                  <span>CHAINAGE: <strong className="text-slate-200">{asset.kmFrom.toFixed(1)}–{asset.kmTo.toFixed(1)} km</strong></span>
-                  <span>TRACK: <strong className="text-slate-200">{asset.trackId}</strong></span>
-                  <span>STATUS: <strong className="text-emerald-400">{asset.status}</strong></span>
+                <div className="flex gap-4 text-[10px] text-gray-600 pt-0.5">
+                  <span>CHAINAGE: <strong className="text-gray-900">{asset.kmFrom.toFixed(1)}–{asset.kmTo.toFixed(1)} km</strong></span>
+                  <span>TRACK: <strong className="text-gray-900">{asset.trackId}</strong></span>
+                  <span>STATUS: <strong className="text-emerald-700">{asset.status}</strong></span>
                 </div>
 
                 {/* Dependencies */}
                 {asset.dependencies && asset.dependencies.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-slate-800/80 space-y-1">
-                    <span className="text-[9px] text-amber-400/90 uppercase font-semibold block">
+                  <div className="mt-2 pt-2 border-t border-gray-100 space-y-1.5">
+                    <span className="text-[9px] text-amber-800 uppercase font-bold block">
                       Cross-Asset Interlock Rules:
                     </span>
                     {asset.dependencies.map((dep, idx) => (
                       <div
                         key={idx}
-                        className="text-[10px] text-slate-400 pl-2 border-l-2 border-amber-500/50 leading-snug"
+                        className="text-[10px] text-gray-700 pl-2.5 border-l-2 border-amber-500 bg-amber-50/50 py-1 pr-1.5 rounded-r leading-relaxed"
                       >
-                        <span className="text-slate-300 font-semibold">{dep.type}: </span>
+                        <span className="font-bold text-gray-900">{dep.type}: </span>
                         {dep.description}
                       </div>
                     ))}
@@ -154,11 +154,11 @@ export default function DigitalTwinDrawer({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-[#111827] text-xs font-mono flex items-center justify-between text-slate-500">
+        <div className="p-3.5 border-t border-gray-200 bg-white text-xs font-mono flex items-center justify-between text-gray-500">
           <span>Digital Twin Core · SIH26027</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded transition-colors"
+            className="px-4 py-1.5 bg-[#1a3c6e] hover:bg-[#14305a] text-white rounded text-xs font-semibold transition-colors cursor-pointer"
           >
             Close Viewer
           </button>
