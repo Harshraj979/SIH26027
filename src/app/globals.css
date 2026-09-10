@@ -1,33 +1,32 @@
 @import "tailwindcss";
 
-/* ── Indian Government Portal — Design System ─────────────────────────────── */
+/* ── RailBlock AI Modern Design System (100% Light Mode) ───────────────────── */
 
 :root {
-  /* Indian Railways / Gov palette */
   --gov-navy:        #003087;
   --gov-navy-mid:    #1a3c6e;
   --gov-saffron:     #FF9933;
   --gov-green:       #138808;
   --gov-white:       #ffffff;
-  --gov-bg:          #f4f6f9;
+  --gov-bg:          #f8fafc;
   --gov-bg-card:     #ffffff;
-  --gov-border:      #d0d7e3;
-  --gov-text:        #1a1a2e;
-  --gov-text-muted:  #555f7a;
-  --gov-text-light:  #8492a6;
+  --gov-border:      #e2e8f0;
+  --gov-text:        #0f172a;
+  --gov-text-muted:  #64748b;
+  --gov-text-light:  #94a3b8;
 
   /* Status colours — light mode */
-  --status-ok-bg:   #ecfdf5;
-  --status-ok-text: #166534;
-  --status-ok-border: #bbf7d0;
+  --status-ok-bg:     #ecfdf5;
+  --status-ok-text:   #065f46;
+  --status-ok-border: #a7f3d0;
 
-  --status-warn-bg:   #fffbeb;
-  --status-warn-text: #92400e;
-  --status-warn-border: #fcd34d;
+  --status-warn-bg:     #fffbeb;
+  --status-warn-text:   #92400e;
+  --status-warn-border: #fde68a;
 
-  --status-err-bg:   #fef2f2;
-  --status-err-text: #991b1b;
-  --status-err-border: #fca5a5;
+  --status-err-bg:     #fff1f2;
+  --status-err-text:   #9f1239;
+  --status-err-border: #fecdd3;
 }
 
 /* Force light mode — no dark mode override */
@@ -38,76 +37,64 @@ html {
 body {
   background-color: var(--gov-bg);
   color: var(--gov-text);
-  font-family: 'Noto Sans', 'Inter', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Scrollbar — light style ──────────────────────────────────────────────── */
+/* ── Modern Sleek Scrollbar ────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #e8edf4;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #b0bfd4;
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #1a3c6e;
+  background: #94a3b8;
 }
 
 /* ── Gov utility classes ──────────────────────────────────────────────────── */
 .gov-section-header {
-  @apply text-xs font-bold uppercase tracking-widest text-[#1a3c6e] border-b border-[#d0d7e3] pb-1.5 mb-3;
+  @apply text-xs font-bold uppercase tracking-wider text-[#1a3c6e] border-b border-slate-200 pb-2 mb-3;
 }
 
 .gov-card {
-  @apply bg-white border border-[#d0d7e3] rounded shadow-sm;
+  @apply bg-white border border-slate-200 rounded-xl shadow-xs;
 }
 
 .gov-btn-primary {
-  @apply bg-[#1a3c6e] hover:bg-[#14305a] disabled:bg-gray-400 text-white text-sm font-semibold px-4 py-2 rounded transition-colors;
+  @apply bg-[#1a3c6e] hover:bg-[#14305a] disabled:bg-slate-300 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors shadow-2xs;
 }
 
 .gov-btn-secondary {
-  @apply bg-white hover:bg-gray-50 border border-[#d0d7e3] text-[#1a3c6e] text-sm font-semibold px-4 py-2 rounded transition-colors;
-}
-
-.gov-btn-danger {
-  @apply bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded transition-colors;
+  @apply bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors shadow-2xs;
 }
 
 .gov-input {
-  @apply w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:border-[#1a3c6e] focus:ring-1 focus:ring-[#1a3c6e];
+  @apply w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 bg-white focus:outline-none focus:border-[#1a3c6e] focus:ring-1 focus:ring-[#1a3c6e] transition-colors;
 }
 
 .gov-table {
-  @apply w-full text-sm border-collapse;
+  @apply w-full text-xs border-collapse;
 }
 .gov-table th {
-  @apply px-3 py-2 text-left text-xs font-bold text-[#1a3c6e] bg-[#eef2f9] border-b border-[#d0d7e3] uppercase tracking-wider;
+  @apply px-4 py-3 text-left text-[10px] font-bold text-slate-500 bg-slate-50 border-b border-slate-200 uppercase tracking-wider;
 }
 .gov-table td {
-  @apply px-3 py-2 text-gray-800 border-b border-gray-100;
+  @apply px-4 py-3 text-slate-700 border-b border-slate-100;
 }
 .gov-table tr:hover td {
-  @apply bg-blue-50;
-}
-
-/* ── Tab nav — gov style ──────────────────────────────────────────────────── */
-.gov-tab {
-  @apply px-4 py-2 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-[#1a3c6e] hover:border-[#1a3c6e] transition-colors cursor-pointer whitespace-nowrap;
-}
-.gov-tab-active {
-  @apply text-[#1a3c6e] border-[#FF9933] font-bold;
+  @apply bg-slate-50/70;
 }
 
 /* ── Status badges ────────────────────────────────────────────────────────── */
-.badge-ok      { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-green-100 text-green-800 border border-green-300; }
-.badge-warn    { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300; }
-.badge-err     { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-300; }
-.badge-neutral { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-300; }
-.badge-info    { @apply text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300; }
+.badge-ok      { @apply text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200; }
+.badge-warn    { @apply text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200; }
+.badge-err     { @apply text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200; }
+.badge-neutral { @apply text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200; }
+.badge-info    { @apply text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200; }

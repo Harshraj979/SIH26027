@@ -71,7 +71,7 @@ export function login(employeeId: string, password: string): User | null {
 
 export function logout(): void {
   if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY, "LOGGED_OUT");
   }
 }
 
@@ -79,10 +79,19 @@ export function getUser(): User | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as User;
+    if (raw === "LOGGED_OUT") return null;
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_USERS[1].user));
+      return DEMO_USERS[1].user;
+    }
+    const parsed = JSON.parse(raw) as User;
+    if (parsed.employeeId === "ADMIN001") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_USERS[1].user));
+      return DEMO_USERS[1].user;
+    }
+    return parsed;
   } catch {
-    return null;
+    return DEMO_USERS[1].user;
   }
 }
 

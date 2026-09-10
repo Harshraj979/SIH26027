@@ -51,11 +51,11 @@ export const ROLE_PERMISSIONS: Record<Role, {
     canInjectEvent:       true,
     canNegotiate:         true,
     canAccessDigitalTwin: true,
-    canAccessFieldFeedback: false,
+    canAccessFieldFeedback: true,
     canViewAuditLogs:     true,
     canManageUsers:       false,
     canApproveSubmissions: true,
-    canExportData:        false,
+    canExportData:        true,
   },
   OBSERVER: {
     canOptimize:          false,

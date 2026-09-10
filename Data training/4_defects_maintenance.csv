@@ -1,0 +1,182 @@
+defect_id,date_reported,department,source_system,asset_id,km_point,section_id,division,defect_type,severity,estimated_repair_hours,due_date,status,overdue_days
+DEF0001,2026-09-01,TRD,TDMS,AST0042,71.5,SEC005,Delhi,Traction pole tilt,Major,2.7,2026-09-09,Open,0
+DEF0002,2026-09-01,Engineering,TMS,AST0079,38.1,SEC010,Moradabad,Rail fracture,Major,3.8,2026-09-10,Overdue,8
+DEF0003,2026-09-01,S&T,SMMS,AST0004,47.2,SEC001,Ambala,Signal aspect failure,Minor,1.8,2026-09-24,Scheduled,0
+DEF0004,2026-09-01,TRD,TDMS,AST0057,29.5,SEC007,Lucknow,OHE wire wear,Minor,1.0,2026-09-15,Open,0
+DEF0005,2026-09-01,Engineering,TMS,AST0028,55.9,SEC004,Ferozepur,Worn out rail,Major,2.7,2026-09-09,Overdue,8
+DEF0006,2026-09-01,Engineering,TMS,AST0056,14.8,SEC007,Lucknow,Rail fracture,Minor,0.7,2026-09-17,Open,0
+DEF0007,2026-09-01,S&T,SMMS,AST0053,25.7,SEC007,Lucknow,Track circuit failure,Minor,1.1,2026-09-14,Open,0
+DEF0008,2026-09-02,S&T,SMMS,AST0048,41.4,SEC006,Delhi,Point machine malfunction,Minor,1.2,2026-09-14,Resolved,0
+DEF0009,2026-09-02,Engineering,TMS,AST0032,53.5,SEC004,Ferozepur,Loose fittings,Major,3.6,2026-09-10,Open,0
+DEF0010,2026-09-02,S&T,SMMS,AST0072,28.4,SEC009,Moradabad,Track circuit failure,Minor,1.1,2026-09-25,Resolved,0
+DEF0011,2026-09-02,TRD,TDMS,AST0037,42.6,SEC004,Ferozepur,Sagging catenary wire,Major,2.2,2026-09-10,Open,0
+DEF0012,2026-09-02,Engineering,TMS,AST0029,48.0,SEC004,Ferozepur,Rail fracture,Major,3.1,2026-09-06,Scheduled,0
+DEF0013,2026-09-03,Engineering,TMS,AST0056,14.8,SEC007,Lucknow,Worn out rail,Minor,1.7,2026-09-13,Scheduled,0
+DEF0014,2026-09-03,TRD,TDMS,AST0089,37.5,SEC011,Ferozepur,Feeder cable fault,Critical,3.8,2026-09-05,Resolved,0
+DEF0015,2026-09-03,S&T,SMMS,AST0063,52.5,SEC008,Lucknow,Point machine malfunction,Major,2.8,2026-09-08,Scheduled,0
+DEF0016,2026-09-03,Engineering,TMS,AST0012,8.1,SEC002,Ambala,Loose fittings,Major,2.8,2026-09-10,Open,0
+DEF0017,2026-09-03,Engineering,TMS,AST0073,35.4,SEC009,Moradabad,Ballast deficiency,Minor,1.4,2026-09-15,Resolved,0
+DEF0018,2026-09-03,Engineering,TMS,AST0076,60.5,SEC010,Moradabad,Rail fracture,Major,2.5,2026-09-12,Open,0
+DEF0019,2026-09-03,S&T,SMMS,AST0054,11.0,SEC007,Lucknow,Track circuit failure,Major,3.0,2026-09-09,Open,0
+DEF0020,2026-09-04,Engineering,TMS,AST0076,60.5,SEC010,Moradabad,Track geometry deviation,Major,2.6,2026-09-09,Open,0
+DEF0021,2026-09-04,TRD,TDMS,AST0001,58.9,SEC001,Ambala,Insulator damage,Major,2.4,2026-09-09,Scheduled,0
+DEF0022,2026-09-04,Engineering,TMS,AST0032,53.5,SEC004,Ferozepur,Rail fracture,Major,2.9,2026-09-09,Open,0
+DEF0023,2026-09-04,S&T,SMMS,AST0065,68.0,SEC008,Lucknow,Interlocking fault,Minor,1.7,2026-09-16,Open,0
+DEF0024,2026-09-04,Engineering,TMS,AST0056,14.8,SEC007,Lucknow,Rail fracture,Major,2.2,2026-09-10,Overdue,10
+DEF0025,2026-09-05,S&T,SMMS,AST0054,11.0,SEC007,Lucknow,Track circuit failure,Major,2.0,2026-09-11,Open,0
+DEF0026,2026-09-05,S&T,SMMS,AST0059,21.2,SEC007,Lucknow,Level crossing gate fault,Minor,0.6,2026-09-18,Open,0
+DEF0027,2026-09-05,TRD,TDMS,AST0068,26.3,SEC009,Moradabad,OHE wire wear,Major,2.6,2026-09-11,Open,0
+DEF0028,2026-09-05,TRD,TDMS,AST0010,33.2,SEC002,Ambala,Sagging catenary wire,Minor,1.3,2026-09-21,Resolved,0
+DEF0029,2026-09-05,Engineering,TMS,AST0073,35.4,SEC009,Moradabad,Loose fittings,Minor,0.9,2026-09-19,Open,0
+DEF0030,2026-09-05,TRD,TDMS,AST0046,27.0,SEC006,Delhi,Booster transformer issue,Critical,5.9,2026-09-08,Overdue,13
+DEF0031,2026-09-06,TRD,TDMS,AST0058,7.0,SEC007,Lucknow,Booster transformer issue,Minor,1.3,2026-09-26,Resolved,0
+DEF0032,2026-09-06,Engineering,TMS,AST0020,6.7,SEC003,Ferozepur,Track geometry deviation,Critical,4.3,2026-09-08,Scheduled,0
+DEF0033,2026-09-06,TRD,TDMS,AST0046,27.0,SEC006,Delhi,Sagging catenary wire,Critical,4.4,2026-09-07,Open,0
+DEF0034,2026-09-06,TRD,TDMS,AST0010,33.2,SEC002,Ambala,Booster transformer issue,Minor,1.8,2026-09-28,Overdue,9
+DEF0035,2026-09-06,Engineering,TMS,AST0095,49.8,SEC012,Lucknow,Rail fracture,Minor,1.7,2026-09-22,Open,0
+DEF0036,2026-09-06,Engineering,TMS,AST0020,6.7,SEC003,Ferozepur,Rail fracture,Minor,1.7,2026-09-26,Resolved,0
+DEF0037,2026-09-06,Engineering,TMS,AST0028,55.9,SEC004,Ferozepur,Cracked fish plate,Critical,5.1,2026-09-08,Overdue,10
+DEF0038,2026-09-07,S&T,SMMS,AST0064,62.4,SEC008,Lucknow,Axle counter fault,Major,2.7,2026-09-15,Open,0
+DEF0039,2026-09-07,Engineering,TMS,AST0043,64.5,SEC005,Delhi,Rail fracture,Major,3.1,2026-09-14,Open,0
+DEF0040,2026-09-07,S&T,SMMS,AST0085,32.1,SEC011,Ferozepur,Interlocking fault,Minor,1.0,2026-09-21,Resolved,0
+DEF0041,2026-09-07,Engineering,TMS,AST0028,55.9,SEC004,Ferozepur,Loose fittings,Major,2.3,2026-09-16,Resolved,0
+DEF0042,2026-09-08,S&T,SMMS,AST0083,44.7,SEC010,Moradabad,Track circuit failure,Minor,1.5,2026-09-20,Scheduled,0
+DEF0043,2026-09-08,TRD,TDMS,AST0047,25.1,SEC006,Delhi,OHE wire wear,Major,2.4,2026-09-13,Open,0
+DEF0044,2026-09-08,S&T,SMMS,AST0025,16.1,SEC003,Ferozepur,Point machine malfunction,Minor,0.7,2026-09-27,Resolved,0
+DEF0045,2026-09-08,Engineering,TMS,AST0012,8.1,SEC002,Ambala,Loose fittings,Minor,0.6,2026-09-28,Resolved,0
+DEF0046,2026-09-08,S&T,SMMS,AST0077,38.5,SEC010,Moradabad,Axle counter fault,Major,2.4,2026-09-17,Scheduled,0
+DEF0047,2026-09-09,Engineering,TMS,AST0006,43.8,SEC001,Ambala,Track geometry deviation,Major,3.4,2026-09-16,Scheduled,0
+DEF0048,2026-09-09,TRD,TDMS,AST0058,7.0,SEC007,Lucknow,Insulator damage,Major,2.6,2026-09-19,Scheduled,0
+DEF0049,2026-09-09,S&T,SMMS,AST0025,16.1,SEC003,Ferozepur,Track circuit failure,Minor,1.4,2026-10-03,Overdue,5
+DEF0050,2026-09-09,S&T,SMMS,AST0065,68.0,SEC008,Lucknow,Interlocking fault,Minor,0.7,2026-09-25,Resolved,0
+DEF0051,2026-09-10,TRD,TDMS,AST0007,64.2,SEC001,Ambala,Booster transformer issue,Minor,1.1,2026-09-23,Scheduled,0
+DEF0052,2026-09-10,Engineering,TMS,AST0016,30.8,SEC002,Ambala,Ballast deficiency,Critical,3.5,2026-09-12,Resolved,0
+DEF0053,2026-09-10,Engineering,TMS,AST0056,14.8,SEC007,Lucknow,Rail fracture,Minor,0.8,2026-10-04,Resolved,0
+DEF0054,2026-09-10,S&T,SMMS,AST0054,11.0,SEC007,Lucknow,Signal aspect failure,Major,2.7,2026-09-17,Resolved,0
+DEF0055,2026-09-11,S&T,SMMS,AST0097,67.1,SEC012,Lucknow,Signal aspect failure,Minor,1.5,2026-09-25,Open,0
+DEF0056,2026-09-11,Engineering,TMS,AST0044,44.5,SEC005,Delhi,Loose fittings,Minor,1.6,2026-10-06,Open,0
+DEF0057,2026-09-11,TRD,TDMS,AST0042,71.5,SEC005,Delhi,OHE wire wear,Critical,5.5,2026-09-14,Resolved,0
+DEF0058,2026-09-11,Engineering,TMS,AST0055,6.6,SEC007,Lucknow,Rail fracture,Minor,0.9,2026-09-24,Open,0
+DEF0059,2026-09-11,S&T,SMMS,AST0080,42.6,SEC010,Moradabad,Axle counter fault,Critical,5.5,2026-09-13,Overdue,1
+DEF0060,2026-09-12,S&T,SMMS,AST0031,56.2,SEC004,Ferozepur,Level crossing gate fault,Major,2.9,2026-09-20,Open,0
+DEF0061,2026-09-12,S&T,SMMS,AST0024,4.0,SEC003,Ferozepur,Level crossing gate fault,Major,3.0,2026-09-18,Open,0
+DEF0062,2026-09-12,S&T,SMMS,AST0065,68.0,SEC008,Lucknow,Interlocking fault,Minor,1.1,2026-10-07,Open,0
+DEF0063,2026-09-12,TRD,TDMS,AST0036,48.4,SEC004,Ferozepur,Feeder cable fault,Major,2.7,2026-09-16,Open,0
+DEF0064,2026-09-12,Engineering,TMS,AST0081,51.3,SEC010,Moradabad,Rail fracture,Minor,1.6,2026-10-02,Open,0
+DEF0065,2026-09-12,S&T,SMMS,AST0097,67.1,SEC012,Lucknow,Level crossing gate fault,Critical,5.3,2026-09-14,Resolved,0
+DEF0066,2026-09-12,S&T,SMMS,AST0024,4.0,SEC003,Ferozepur,Point machine malfunction,Critical,5.3,2026-09-14,Open,0
+DEF0067,2026-09-12,S&T,SMMS,AST0093,69.6,SEC012,Lucknow,Signal aspect failure,Critical,3.9,2026-09-14,Resolved,0
+DEF0068,2026-09-13,S&T,SMMS,AST0005,57.7,SEC001,Ambala,Level crossing gate fault,Major,2.7,2026-09-23,Open,0
+DEF0069,2026-09-13,Engineering,TMS,AST0035,38.8,SEC004,Ferozepur,Rail fracture,Minor,1.2,2026-10-05,Scheduled,0
+DEF0070,2026-09-13,Engineering,TMS,AST0050,49.9,SEC006,Delhi,Ballast deficiency,Minor,1.2,2026-10-08,Open,0
+DEF0071,2026-09-13,Engineering,TMS,AST0035,38.8,SEC004,Ferozepur,Rail fracture,Major,2.2,2026-09-21,Resolved,0
+DEF0072,2026-09-13,S&T,SMMS,AST0064,62.4,SEC008,Lucknow,Track circuit failure,Critical,4.0,2026-09-15,Open,0
+DEF0073,2026-09-13,Engineering,TMS,AST0055,6.6,SEC007,Lucknow,Cracked fish plate,Minor,1.0,2026-09-24,Scheduled,0
+DEF0074,2026-09-13,Engineering,TMS,AST0079,38.1,SEC010,Moradabad,Track geometry deviation,Critical,5.9,2026-09-14,Open,0
+DEF0075,2026-09-14,TRD,TDMS,AST0066,54.7,SEC008,Lucknow,Booster transformer issue,Minor,1.9,2026-09-28,Resolved,0
+DEF0076,2026-09-14,TRD,TDMS,AST0057,29.5,SEC007,Lucknow,OHE wire wear,Major,2.5,2026-09-23,Open,0
+DEF0077,2026-09-14,TRD,TDMS,AST0084,39.0,SEC011,Ferozepur,OHE wire wear,Major,3.4,2026-09-20,Open,0
+DEF0078,2026-09-14,TRD,TDMS,AST0074,47.8,SEC009,Moradabad,Insulator damage,Minor,1.1,2026-10-02,Open,0
+DEF0079,2026-09-14,Engineering,TMS,AST0073,35.4,SEC009,Moradabad,Cracked fish plate,Major,2.8,2026-09-22,Open,0
+DEF0080,2026-09-14,Engineering,TMS,AST0091,29.6,SEC011,Ferozepur,Track geometry deviation,Major,3.2,2026-09-23,Resolved,0
+DEF0081,2026-09-14,Engineering,TMS,AST0016,30.8,SEC002,Ambala,Cracked fish plate,Minor,1.2,2026-10-08,Resolved,0
+DEF0082,2026-09-14,TRD,TDMS,AST0041,59.6,SEC005,Delhi,Booster transformer issue,Major,2.1,2026-09-22,Open,0
+DEF0083,2026-09-15,TRD,TDMS,AST0092,37.4,SEC011,Ferozepur,Booster transformer issue,Minor,1.5,2026-10-06,Overdue,2
+DEF0084,2026-09-15,TRD,TDMS,AST0018,22.3,SEC003,Ferozepur,Insulator damage,Minor,0.5,2026-10-06,Overdue,9
+DEF0085,2026-09-15,TRD,TDMS,AST0042,71.5,SEC005,Delhi,OHE wire wear,Critical,6.0,2026-09-18,Overdue,7
+DEF0086,2026-09-15,TRD,TDMS,AST0074,47.8,SEC009,Moradabad,OHE wire wear,Major,2.6,2026-09-19,Open,0
+DEF0087,2026-09-15,Engineering,TMS,AST0045,60.5,SEC005,Delhi,Cracked fish plate,Minor,1.7,2026-09-30,Scheduled,0
+DEF0088,2026-09-16,S&T,SMMS,AST0008,27.7,SEC002,Ambala,Signal aspect failure,Minor,1.0,2026-10-01,Open,0
+DEF0089,2026-09-16,Engineering,TMS,AST0045,60.5,SEC005,Delhi,Worn out rail,Minor,1.8,2026-10-04,Open,0
+DEF0090,2026-09-16,TRD,TDMS,AST0036,48.4,SEC004,Ferozepur,Insulator damage,Major,3.2,2026-09-20,Overdue,3
+DEF0091,2026-09-16,S&T,SMMS,AST0075,35.1,SEC009,Moradabad,Point machine malfunction,Major,3.2,2026-09-24,Open,0
+DEF0092,2026-09-17,S&T,SMMS,AST0004,47.2,SEC001,Ambala,Signal aspect failure,Critical,4.9,2026-09-20,Open,0
+DEF0093,2026-09-17,TRD,TDMS,AST0084,39.0,SEC011,Ferozepur,Traction pole tilt,Major,2.1,2026-09-26,Overdue,11
+DEF0094,2026-09-17,S&T,SMMS,AST0062,63.9,SEC008,Lucknow,Point machine malfunction,Minor,1.5,2026-10-06,Overdue,12
+DEF0095,2026-09-17,S&T,SMMS,AST0049,54.3,SEC006,Delhi,Axle counter fault,Major,2.4,2026-09-25,Open,0
+DEF0096,2026-09-17,TRD,TDMS,AST0041,59.6,SEC005,Delhi,Booster transformer issue,Minor,1.0,2026-10-09,Open,0
+DEF0097,2026-09-17,Engineering,TMS,AST0012,8.1,SEC002,Ambala,Rail fracture,Critical,4.4,2026-09-19,Open,0
+DEF0098,2026-09-17,Engineering,TMS,AST0094,35.1,SEC012,Lucknow,Ballast deficiency,Minor,1.8,2026-10-10,Open,0
+DEF0099,2026-09-18,TRD,TDMS,AST0074,47.8,SEC009,Moradabad,Booster transformer issue,Major,3.5,2026-09-25,Resolved,0
+DEF0100,2026-09-18,S&T,SMMS,AST0040,69.5,SEC005,Delhi,Axle counter fault,Critical,5.8,2026-09-21,Overdue,4
+DEF0101,2026-09-18,TRD,TDMS,AST0036,48.4,SEC004,Ferozepur,OHE wire wear,Critical,4.5,2026-09-21,Scheduled,0
+DEF0102,2026-09-18,S&T,SMMS,AST0004,47.2,SEC001,Ambala,Signal aspect failure,Major,3.8,2026-09-27,Open,0
+DEF0103,2026-09-19,Engineering,TMS,AST0034,62.2,SEC004,Ferozepur,Rail fracture,Major,2.4,2026-09-27,Open,0
+DEF0104,2026-09-19,S&T,SMMS,AST0049,54.3,SEC006,Delhi,Interlocking fault,Critical,6.0,2026-09-22,Scheduled,0
+DEF0105,2026-09-19,Engineering,TMS,AST0032,53.5,SEC004,Ferozepur,Track geometry deviation,Major,4.0,2026-09-27,Resolved,0
+DEF0106,2026-09-19,S&T,SMMS,AST0026,7.2,SEC003,Ferozepur,Interlocking fault,Minor,1.3,2026-09-30,Open,0
+DEF0107,2026-09-19,TRD,TDMS,AST0061,51.1,SEC008,Lucknow,Sagging catenary wire,Minor,1.4,2026-10-03,Open,0
+DEF0108,2026-09-19,Engineering,TMS,AST0021,2.2,SEC003,Ferozepur,Track geometry deviation,Minor,1.6,2026-10-08,Overdue,9
+DEF0109,2026-09-20,Engineering,TMS,AST0091,29.6,SEC011,Ferozepur,Worn out rail,Major,3.6,2026-09-26,Open,0
+DEF0110,2026-09-20,Engineering,TMS,AST0056,14.8,SEC007,Lucknow,Worn out rail,Critical,5.7,2026-09-23,Scheduled,0
+DEF0111,2026-09-20,Engineering,TMS,AST0034,62.2,SEC004,Ferozepur,Loose fittings,Minor,1.7,2026-10-07,Scheduled,0
+DEF0112,2026-09-20,S&T,SMMS,AST0022,12.8,SEC003,Ferozepur,Interlocking fault,Minor,1.4,2026-10-12,Open,0
+DEF0113,2026-09-20,S&T,SMMS,AST0005,57.7,SEC001,Ambala,Interlocking fault,Minor,0.7,2026-09-30,Open,0
+DEF0114,2026-09-20,S&T,SMMS,AST0053,25.7,SEC007,Lucknow,Level crossing gate fault,Major,3.0,2026-09-28,Resolved,0
+DEF0115,2026-09-20,Engineering,TMS,AST0095,49.8,SEC012,Lucknow,Loose fittings,Critical,3.4,2026-09-21,Overdue,11
+DEF0116,2026-09-21,TRD,TDMS,AST0041,59.6,SEC005,Delhi,Insulator damage,Minor,1.3,2026-10-12,Scheduled,0
+DEF0117,2026-09-21,Engineering,TMS,AST0088,18.5,SEC011,Ferozepur,Loose fittings,Minor,0.9,2026-10-16,Open,0
+DEF0118,2026-09-21,Engineering,TMS,AST0012,8.1,SEC002,Ambala,Ballast deficiency,Critical,5.9,2026-09-23,Scheduled,0
+DEF0119,2026-09-21,TRD,TDMS,AST0089,37.5,SEC011,Ferozepur,Booster transformer issue,Minor,1.2,2026-10-09,Open,0
+DEF0120,2026-09-21,Engineering,TMS,AST0070,34.4,SEC009,Moradabad,Track geometry deviation,Minor,1.1,2026-10-12,Resolved,0
+DEF0121,2026-09-21,S&T,SMMS,AST0038,71.4,SEC005,Delhi,Signal aspect failure,Major,3.4,2026-09-27,Resolved,0
+DEF0122,2026-09-22,Engineering,TMS,AST0044,44.5,SEC005,Delhi,Cracked fish plate,Critical,4.6,2026-09-25,Scheduled,0
+DEF0123,2026-09-22,Engineering,TMS,AST0076,60.5,SEC010,Moradabad,Loose fittings,Major,2.5,2026-10-01,Resolved,0
+DEF0124,2026-09-22,Engineering,TMS,AST0079,38.1,SEC010,Moradabad,Rail fracture,Critical,4.0,2026-09-24,Open,0
+DEF0125,2026-09-22,TRD,TDMS,AST0001,58.9,SEC001,Ambala,Sagging catenary wire,Minor,0.7,2026-10-17,Overdue,4
+DEF0126,2026-09-22,TRD,TDMS,AST0037,42.6,SEC004,Ferozepur,Feeder cable fault,Major,2.1,2026-10-02,Open,0
+DEF0127,2026-09-22,Engineering,TMS,AST0069,24.6,SEC009,Moradabad,Loose fittings,Minor,1.9,2026-10-07,Open,0
+DEF0128,2026-09-22,S&T,SMMS,AST0005,57.7,SEC001,Ambala,Axle counter fault,Minor,0.8,2026-10-11,Resolved,0
+DEF0129,2026-09-22,TRD,TDMS,AST0084,39.0,SEC011,Ferozepur,Sagging catenary wire,Critical,5.9,2026-09-24,Overdue,11
+DEF0130,2026-09-23,TRD,TDMS,AST0018,22.3,SEC003,Ferozepur,Sagging catenary wire,Minor,0.8,2026-10-06,Open,0
+DEF0131,2026-09-23,S&T,SMMS,AST0083,44.7,SEC010,Moradabad,Track circuit failure,Minor,0.5,2026-10-13,Scheduled,0
+DEF0132,2026-09-23,S&T,SMMS,AST0097,67.1,SEC012,Lucknow,Point machine malfunction,Critical,5.6,2026-09-25,Resolved,0
+DEF0133,2026-09-23,Engineering,TMS,AST0012,8.1,SEC002,Ambala,Track geometry deviation,Major,2.4,2026-09-28,Overdue,15
+DEF0134,2026-09-23,Engineering,TMS,AST0035,38.8,SEC004,Ferozepur,Track geometry deviation,Critical,5.3,2026-09-25,Open,0
+DEF0135,2026-09-23,TRD,TDMS,AST0002,44.4,SEC001,Ambala,Feeder cable fault,Minor,1.5,2026-10-04,Scheduled,0
+DEF0136,2026-09-23,Engineering,TMS,AST0021,2.2,SEC003,Ferozepur,Track geometry deviation,Minor,1.9,2026-10-12,Scheduled,0
+DEF0137,2026-09-24,S&T,SMMS,AST0038,71.4,SEC005,Delhi,Track circuit failure,Minor,0.8,2026-10-08,Overdue,8
+DEF0138,2026-09-24,S&T,SMMS,AST0078,38.6,SEC010,Moradabad,Track circuit failure,Minor,1.3,2026-10-19,Scheduled,0
+DEF0139,2026-09-24,Engineering,TMS,AST0028,55.9,SEC004,Ferozepur,Cracked fish plate,Major,3.2,2026-10-04,Open,0
+DEF0140,2026-09-24,Engineering,TMS,AST0091,29.6,SEC011,Ferozepur,Ballast deficiency,Critical,4.7,2026-09-25,Resolved,0
+DEF0141,2026-09-24,S&T,SMMS,AST0026,7.2,SEC003,Ferozepur,Interlocking fault,Minor,0.7,2026-10-18,Open,0
+DEF0142,2026-09-24,TRD,TDMS,AST0084,39.0,SEC011,Ferozepur,Traction pole tilt,Critical,4.5,2026-09-25,Overdue,9
+DEF0143,2026-09-24,Engineering,TMS,AST0073,35.4,SEC009,Moradabad,Rail fracture,Major,3.3,2026-09-30,Scheduled,0
+DEF0144,2026-09-24,S&T,SMMS,AST0004,47.2,SEC001,Ambala,Level crossing gate fault,Critical,3.2,2026-09-26,Open,0
+DEF0145,2026-09-25,S&T,SMMS,AST0008,27.7,SEC002,Ambala,Signal aspect failure,Minor,1.2,2026-10-14,Open,0
+DEF0146,2026-09-25,S&T,SMMS,AST0083,44.7,SEC010,Moradabad,Level crossing gate fault,Minor,1.1,2026-10-17,Open,0
+DEF0147,2026-09-25,S&T,SMMS,AST0049,54.3,SEC006,Delhi,Axle counter fault,Critical,5.9,2026-09-28,Open,0
+DEF0148,2026-09-26,Engineering,TMS,AST0012,8.1,SEC002,Ambala,Track geometry deviation,Major,3.5,2026-10-01,Resolved,0
+DEF0149,2026-09-26,TRD,TDMS,AST0039,39.7,SEC005,Delhi,Traction pole tilt,Minor,1.3,2026-10-18,Resolved,0
+DEF0150,2026-09-26,TRD,TDMS,AST0036,48.4,SEC004,Ferozepur,Insulator damage,Critical,5.8,2026-09-29,Scheduled,0
+DEF0151,2026-09-26,S&T,SMMS,AST0060,63.5,SEC008,Lucknow,Axle counter fault,Major,3.9,2026-09-30,Open,0
+DEF0152,2026-09-26,Engineering,TMS,AST0076,60.5,SEC010,Moradabad,Rail fracture,Major,3.3,2026-10-06,Open,0
+DEF0153,2026-09-27,S&T,SMMS,AST0049,54.3,SEC006,Delhi,Point machine malfunction,Major,3.5,2026-10-07,Open,0
+DEF0154,2026-09-27,S&T,SMMS,AST0038,71.4,SEC005,Delhi,Point machine malfunction,Minor,1.6,2026-10-17,Overdue,13
+DEF0155,2026-09-27,TRD,TDMS,AST0042,71.5,SEC005,Delhi,Insulator damage,Critical,3.4,2026-09-30,Overdue,7
+DEF0156,2026-09-27,Engineering,TMS,AST0094,35.1,SEC012,Lucknow,Worn out rail,Minor,1.8,2026-10-12,Scheduled,0
+DEF0157,2026-09-27,S&T,SMMS,AST0064,62.4,SEC008,Lucknow,Signal aspect failure,Minor,1.9,2026-10-19,Scheduled,0
+DEF0158,2026-09-27,Engineering,TMS,AST0056,14.8,SEC007,Lucknow,Track geometry deviation,Critical,4.1,2026-09-30,Overdue,14
+DEF0159,2026-09-27,S&T,SMMS,AST0024,4.0,SEC003,Ferozepur,Point machine malfunction,Minor,1.9,2026-10-20,Resolved,0
+DEF0160,2026-09-27,TRD,TDMS,AST0018,22.3,SEC003,Ferozepur,Traction pole tilt,Major,2.4,2026-10-06,Open,0
+DEF0161,2026-09-28,Engineering,TMS,AST0012,8.1,SEC002,Ambala,Worn out rail,Major,2.4,2026-10-04,Open,0
+DEF0162,2026-09-28,Engineering,TMS,AST0006,43.8,SEC001,Ambala,Rail fracture,Major,3.5,2026-10-07,Scheduled,0
+DEF0163,2026-09-28,S&T,SMMS,AST0093,69.6,SEC012,Lucknow,Track circuit failure,Critical,5.7,2026-09-29,Resolved,0
+DEF0164,2026-09-28,Engineering,TMS,AST0016,30.8,SEC002,Ambala,Loose fittings,Minor,1.2,2026-10-15,Scheduled,0
+DEF0165,2026-09-28,Engineering,TMS,AST0051,57.1,SEC006,Delhi,Cracked fish plate,Minor,1.7,2026-10-20,Overdue,11
+DEF0166,2026-09-28,Engineering,TMS,AST0035,38.8,SEC004,Ferozepur,Ballast deficiency,Major,3.0,2026-10-02,Resolved,0
+DEF0167,2026-09-29,TRD,TDMS,AST0041,59.6,SEC005,Delhi,Insulator damage,Major,2.8,2026-10-07,Resolved,0
+DEF0168,2026-09-29,TRD,TDMS,AST0003,58.5,SEC001,Ambala,Feeder cable fault,Minor,1.4,2026-10-22,Open,0
+DEF0169,2026-09-29,Engineering,TMS,AST0079,38.1,SEC010,Moradabad,Track geometry deviation,Major,2.5,2026-10-07,Scheduled,0
+DEF0170,2026-09-29,Engineering,TMS,AST0033,53.7,SEC004,Ferozepur,Track geometry deviation,Minor,1.5,2026-10-24,Overdue,12
+DEF0171,2026-09-29,S&T,SMMS,AST0022,12.8,SEC003,Ferozepur,Point machine malfunction,Minor,1.2,2026-10-10,Overdue,14
+DEF0172,2026-09-29,Engineering,TMS,AST0086,22.5,SEC011,Ferozepur,Rail fracture,Minor,1.1,2026-10-16,Open,0
+DEF0173,2026-09-29,S&T,SMMS,AST0093,69.6,SEC012,Lucknow,Interlocking fault,Major,2.1,2026-10-08,Scheduled,0
+DEF0174,2026-09-29,S&T,SMMS,AST0062,63.9,SEC008,Lucknow,Level crossing gate fault,Minor,0.5,2026-10-22,Open,0
+DEF0175,2026-09-30,Engineering,TMS,AST0069,24.6,SEC009,Moradabad,Ballast deficiency,Critical,5.4,2026-10-03,Open,0
+DEF0176,2026-09-30,TRD,TDMS,AST0023,17.2,SEC003,Ferozepur,OHE wire wear,Minor,1.3,2026-10-17,Open,0
+DEF0177,2026-09-30,TRD,TDMS,AST0046,27.0,SEC006,Delhi,Feeder cable fault,Minor,0.6,2026-10-22,Overdue,4
+DEF0178,2026-09-30,Engineering,TMS,AST0029,48.0,SEC004,Ferozepur,Ballast deficiency,Minor,1.8,2026-10-11,Open,0
+DEF0179,2026-09-30,Engineering,TMS,AST0012,8.1,SEC002,Ambala,Track geometry deviation,Critical,3.0,2026-10-01,Open,0
+DEF0180,2026-09-30,S&T,SMMS,AST0083,44.7,SEC010,Moradabad,Track circuit failure,Minor,1.8,2026-10-13,Resolved,0
+DEF0181,2026-09-30,Engineering,TMS,AST0030,35.1,SEC004,Ferozepur,Cracked fish plate,Minor,1.5,2026-10-25,Open,0

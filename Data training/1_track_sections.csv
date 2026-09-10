@@ -1,0 +1,13 @@
+section_id,division,section_name,start_km,end_km,length_km,line_type,max_speed_kmph,avg_daily_trains,electrified
+SEC001,Ambala,Ambala-Kalka,40,67,27,Double Line,120,76,Y
+SEC002,Ambala,Ambala-Ludhiana,8,34,26,Single Line,100,120,N
+SEC003,Ferozepur,Ferozepur-Ludhiana,2,23,21,Double Line,110,74,Y
+SEC004,Ferozepur,Ferozepur-Amritsar,35,67,32,Single Line,130,73,N
+SEC005,Delhi,Delhi-Panipat,37,74,37,Double Line,110,134,N
+SEC006,Delhi,Delhi-Rewari,21,58,37,Double Line,110,142,Y
+SEC007,Lucknow,Lucknow-Kanpur,6,31,25,Double Line,100,90,Y
+SEC008,Lucknow,Lucknow-Barabanki,38,74,36,Double Line,130,113,Y
+SEC009,Moradabad,Moradabad-Bareilly,24,49,25,Single Line,120,151,Y
+SEC010,Moradabad,Moradabad-Ghaziabad,36,68,32,Single Line,100,50,Y
+SEC011,Ferozepur,Ludhiana-Jalandhar,18,43,25,Double Line,100,93,Y
+SEC012,Lucknow,Kanpur-Jhansi,29,89,60,Double Line,110,92,Y

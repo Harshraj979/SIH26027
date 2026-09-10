@@ -13,7 +13,7 @@ const TIMEOUT_MS  = 30_000; // 30 second hard timeout
 
 export async function runSolver(payload: SolverPayload): Promise<SolverResult> {
   return new Promise((resolve, reject) => {
-    const pythonBin = process.env.PYTHON_BIN || "python";
+    const pythonBin = process.env.PYTHON_BIN || "python3";
     const py = spawn(pythonBin, [SOLVER_PATH], {
       stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, PYTHONIOENCODING: "utf-8" },

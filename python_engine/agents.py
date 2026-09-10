@@ -37,9 +37,12 @@ class EngineeringAgent:
         gmt = wo.get("cumulativeGmt", 0.0)
         tqi = wo.get("tqiScore", 65.0)
 
-        # Baseline failure probability (0–100)
-        prob = 0.20 * overdue + 0.10 * gmt - 0.35 * tqi
-        prob = max(5.0, min(95.0, prob))
+        # Baseline failure probability / urgency from trained model if available
+        if wo.get("assetRisk") is not None:
+            prob = float(wo["assetRisk"])
+        else:
+            prob = 0.20 * overdue + 0.10 * gmt - 0.35 * tqi
+            prob = max(5.0, min(95.0, prob))
 
         # Monsoon alert increases track subsidence & weld fracture hazard by 40%
         weather_multiplier = 1.40 if self.monsoon_active else 1.0
@@ -48,14 +51,17 @@ class EngineeringAgent:
         urgency = prob * weather_multiplier * consequence
         urgency = max(10.0, min(100.0, urgency))
 
-        # Strategic bidding weight: scale 500 to 10,000
         utility_weight = int(urgency * 95 + 500)
 
-        justification = (
-            f"TMS Bid [{wo.get('id', '')}]: Urgency score {urgency:.1f}/100. "
-            f"Track Quality Index TQI={tqi:.0f}, {overdue}d overdue maintenance, "
-            f"{gmt:.0f} cumulative GMT."
-        )
+        explanation = wo.get("explanation")
+        if explanation:
+            justification = f"TMS Bid [{wo.get('id', '')}] (ML Priority: {urgency:.1f}/100): {explanation}"
+        else:
+            justification = (
+                f"TMS Bid [{wo.get('id', '')}]: Urgency score {urgency:.1f}/100. "
+                f"Track Quality Index TQI={tqi:.0f}, {overdue}d overdue maintenance, "
+                f"{gmt:.0f} cumulative GMT."
+            )
         if self.monsoon_active:
             justification += " Monsoonal moisture alert applied (+40% fracture hazard multiplier)."
 
@@ -72,6 +78,7 @@ class EngineeringAgent:
             "utilityWeight": utility_weight,
             "justification": justification,
             "crossDepsNeeded": ["OHE-MAINT-BOND"] if (wo.get("kmTo", 0) - wo.get("kmFrom", 0) >= 15) else [],
+            "explanation": explanation,
         }
 
 
@@ -90,27 +97,33 @@ class STAgent:
         overdue = wo.get("overdueDays", 0)
         km_from = wo.get("kmFrom", 0.0)
 
-        # S&T failure risk
-        prob = 0.40 * overdue + 15.0
-        if self.monsoon_active:
-            prob *= 1.30  # track circuit ballast leakage during rains
+        # S&T failure risk from trained model or heuristic
+        if wo.get("assetRisk") is not None:
+            prob = float(wo["assetRisk"])
+        else:
+            prob = 0.40 * overdue + 15.0
+            if self.monsoon_active:
+                prob *= 1.30  # track circuit ballast leakage during rains
+            prob = max(10.0, min(95.0, prob))
 
-        prob = max(10.0, min(95.0, prob))
-        urgency = prob
+        weather_multiplier = 1.30 if self.monsoon_active else 1.0
+        urgency = min(100.0, max(10.0, prob * weather_multiplier))
         utility_weight = int(urgency * 90 + 400)
 
-        # Digital Twin cross dependency rule:
-        # Signal maintenance at major junctions (UMB km 195-200 or PNP km 90) requires OHE isolation
         cross_deps = []
         if 190.0 <= km_from <= 205.0:
             cross_deps.append("OHE-TSS-UMB")
         elif 85.0 <= km_from <= 95.0:
             cross_deps.append("OHE-TSS-PNP")
 
-        justification = (
-            f"SMMS Bid [{wo.get('id', '')}]: Urgency score {urgency:.1f}/100. "
-            f"SIL-4 relay & circuit overhaul overdue by {overdue} days."
-        )
+        explanation = wo.get("explanation")
+        if explanation:
+            justification = f"SMMS Bid [{wo.get('id', '')}] (ML Priority: {urgency:.1f}/100): {explanation}"
+        else:
+            justification = (
+                f"SMMS Bid [{wo.get('id', '')}]: Urgency score {urgency:.1f}/100. "
+                f"SIL-4 relay & circuit overhaul overdue by {overdue} days."
+            )
         if cross_deps:
             justification += f" Mandatory OHE power isolation flagged on {', '.join(cross_deps)}."
 
@@ -127,6 +140,7 @@ class STAgent:
             "utilityWeight": utility_weight,
             "justification": justification,
             "crossDepsNeeded": cross_deps,
+            "explanation": explanation,
         }
 
 
@@ -145,18 +159,26 @@ class TRDAgent:
         overdue = wo.get("overdueDays", 0)
         tqi = wo.get("tqiScore", 60.0)
 
-        prob = 0.30 * overdue + (100 - tqi) * 0.25 + 10.0
-        if self.monsoon_active:
-            prob *= 1.25  # lightning & tree branch hazard
+        if wo.get("assetRisk") is not None:
+            prob = float(wo["assetRisk"])
+        else:
+            prob = 0.30 * overdue + (100 - tqi) * 0.25 + 10.0
+            if self.monsoon_active:
+                prob *= 1.25  # lightning & tree branch hazard
+            prob = max(10.0, min(95.0, prob))
 
-        prob = max(10.0, min(95.0, prob))
-        urgency = prob
+        weather_multiplier = 1.25 if self.monsoon_active else 1.0
+        urgency = min(100.0, max(10.0, prob * weather_multiplier))
         utility_weight = int(urgency * 92 + 450)
 
-        justification = (
-            f"TRD Bid [{wo.get('id', '')}]: Urgency score {urgency:.1f}/100. "
-            f"25kV OHE catenary & dropper tension inspection. {overdue}d overdue."
-        )
+        explanation = wo.get("explanation")
+        if explanation:
+            justification = f"TRD Bid [{wo.get('id', '')}] (ML Priority: {urgency:.1f}/100): {explanation}"
+        else:
+            justification = (
+                f"TRD Bid [{wo.get('id', '')}]: Urgency score {urgency:.1f}/100. "
+                f"25kV OHE catenary & dropper tension inspection. {overdue}d overdue."
+            )
 
         return {
             "department": self.department,
@@ -171,6 +193,7 @@ class TRDAgent:
             "utilityWeight": utility_weight,
             "justification": justification,
             "crossDepsNeeded": [],
+            "explanation": explanation,
         }
 
 
@@ -292,20 +315,24 @@ class ArbitrationAgent:
                 mins_saved = sum_isolated_durations - clu["durationMinutes"]
                 total_minutes_saved += mins_saved
 
+                member_exps = [b["explanation"] for b in clu["bids"] if b.get("explanation")]
+                exp_text = f" Driver: {member_exps[0]}" if member_exps else ""
+
                 just = (
                     f"ARBITRATION DECISION [SHADOW BUNDLE]: Merged {len(clu['bids'])} conflicting demands "
                     f"from {depts_str} between km {clu['kmFrom']:.1f} and {clu['kmTo']:.1f} ({clu['trackId']} line). "
                     f"Bundling saves {mins_saved} minutes of corridor possession compared to isolated closures. "
-                    f"Governing urgency: {clu['maxUrgency']:.1f}/100."
+                    f"Governing urgency: {clu['maxUrgency']:.1f}/100.{exp_text}"
                 )
                 if clu["crossDeps"]:
                     just += f" Digital Twin verified OHE electrical feeder isolation on: {', '.join(clu['crossDeps'])}."
             else:
                 b = clu["bids"][0]
+                exp_text = f" Reason: {b['explanation']}" if b.get("explanation") else ""
                 just = (
                     f"ARBITRATION DECISION [SINGLE POSSESSION]: Approved {clu['departments'][0]} demand "
                     f"({b.get('description', '')}) from km {clu['kmFrom']:.1f} to {clu['kmTo']:.1f}. "
-                    f"Urgency score: {clu['maxUrgency']:.1f}/100. Non-overlapping slot assigned."
+                    f"Urgency score: {clu['maxUrgency']:.1f}/100.{exp_text} Non-overlapping slot assigned."
                 )
 
             justifications.append(just)

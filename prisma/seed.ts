@@ -6,11 +6,61 @@
  * Run: npx tsx prisma/seed.ts
  */
 
+import fs from "fs";
+import path from "path";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
 
 const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL || "file:./dev.db" });
 const prisma = new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
+
+// ─── CSV PARSER & SECTION MAPPINGS ───────────────────────────────────────────
+function parseCSV(content: string): Record<string, string>[] {
+  const lines = content.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map((h) => h.trim());
+  const rows: Record<string, string>[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const matches: string[] = [];
+    let match: RegExpExecArray | null;
+    const re = /(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)/g;
+    while ((match = re.exec(line)) !== null) {
+      let val = match[1];
+      if (val.startsWith('"') && val.endsWith('"')) {
+        val = val.slice(1, -1).replace(/""/g, '"');
+      }
+      matches.push(val.trim());
+    }
+    const row: Record<string, string> = {};
+    headers.forEach((h, idx) => {
+      row[h] = matches[idx] ?? "";
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
+const SECTION_BASES: Record<string, { baseKm: number; lenKm: number; name: string }> = {
+  SEC005: { baseKm: 37.0,  lenKm: 37.0, name: "Delhi-Panipat" },
+  SEC006: { baseKm: 15.0,  lenKm: 35.0, name: "Delhi-Rewari Feeder" },
+  SEC010: { baseKm: 45.0,  lenKm: 25.0, name: "Ghaziabad Feeder" },
+  SEC007: { baseKm: 70.0,  lenKm: 20.0, name: "Panipat South" },
+  SEC008: { baseKm: 90.0,  lenKm: 34.0, name: "Panipat-Karnal" },
+  SEC012: { baseKm: 124.0, lenKm: 33.0, name: "Karnal-Kurukshetra" },
+  SEC001: { baseKm: 157.0, lenKm: 40.0, name: "Kurukshetra-Ambala" },
+  SEC002: { baseKm: 197.0, lenKm: 27.0, name: "Ambala-Rajpura" },
+  SEC009: { baseKm: 224.0, lenKm: 34.0, name: "Rajpura-Sirhind" },
+  SEC003: { baseKm: 258.0, lenKm: 25.0, name: "Sirhind-Khanna" },
+  SEC004: { baseKm: 283.0, lenKm: 20.0, name: "Khanna-Ludhiana Outer" },
+  SEC011: { baseKm: 300.0, lenKm: 12.0, name: "Ludhiana Jn Yard" },
+};
+
+function round1(val: number): number {
+  return Math.round(val * 10) / 10;
+}
 
 
 
@@ -316,118 +366,120 @@ async function main() {
     console.log(`  ✔ Train: ${td.number} — ${td.name} (P${td.priority})`);
   }
 
-  // ── Work Orders (TMS / SMMS / TDMS) ─────────────────────────────────────
-  // Each WO has real-world asset parameters for ML scoring
-  const workOrderDefs = [
-    // TMS — Civil/Track Maintenance
-    {
-      id:          "wo-tms-001",
-      department:  "TMS",
-      description: "Weld Joint Destressing & Rail Creep Correction — UMB–RPJ",
-      kmFrom:      197.0, kmTo: 224.0,
-      durationMinutes: 180,
-      overdueDays:  45, cumulativeGmt: 280.0, tqiScore: 42.0,
-      trackId:     "trk-up",
-      requestedDate: new Date("2026-09-08"),
-    },
-    {
-      id:          "wo-tms-002",
-      department:  "TMS",
-      description: "Ballast Tamping & Profile Correction — PNP–KKDE",
-      kmFrom:      90.0, kmTo: 124.0,
-      durationMinutes: 240,
-      overdueDays:  60, cumulativeGmt: 340.0, tqiScore: 38.0,
-      trackId:     "trk-dn",
-      requestedDate: new Date("2026-09-08"),
-    },
-    {
-      id:          "wo-tms-003",
-      department:  "TMS",
-      description: "Level Crossing Gate Renewal — SNP (km 58–63)",
-      kmFrom:      58.0, kmTo: 63.0,
-      durationMinutes: 120,
-      overdueDays:  15, cumulativeGmt: 150.0, tqiScore: 68.0,
-      trackId:     "trk-up",
-      requestedDate: new Date("2026-09-08"),
-    },
+  // ── Work Orders from Trained Defects Dataset ─────────────────────────────
+  console.log("\n📦 Loading 181 Maintenance Defects from Data training…");
+  const dataDir = path.resolve(process.cwd(), "Data training");
 
-    // SMMS — Signalling Maintenance
-    {
-      id:          "wo-smms-001",
-      department:  "SMMS",
-      description: "IPS Battery Replacement & Relay Testing — UMB Station",
-      kmFrom:      195.0, kmTo: 200.0,
-      durationMinutes: 120,
-      overdueDays:  30, cumulativeGmt: 0.0, tqiScore: 60.0,
-      trackId:     "trk-up",
-      requestedDate: new Date("2026-09-08"),
-    },
-    {
-      id:          "wo-smms-002",
-      department:  "SMMS",
-      description: "UFSBI Optical Fibre Splicing — PNP–KUN Section",
-      kmFrom:      90.0, kmTo: 157.0,
-      durationMinutes: 150,
-      overdueDays:  20, cumulativeGmt: 0.0, tqiScore: 55.0,
-      trackId:     "trk-dn",
-      requestedDate: new Date("2026-09-08"),
-    },
-
-    // TDMS — Traction / OHE Maintenance
-    {
-      id:          "wo-tdms-001",
-      department:  "TDMS",
-      description: "OHE Tension & Stagger Check — UMB–RPJ (AT Feeder)",
-      kmFrom:      197.0, kmTo: 224.0,
-      durationMinutes: 150,
-      overdueDays:  35, cumulativeGmt: 0.0, tqiScore: 50.0,
-      trackId:     "trk-up",
-      requestedDate: new Date("2026-09-08"),
-    },
-    {
-      id:          "wo-tdms-002",
-      department:  "TDMS",
-      description: "Return Conductor Bond Renewal — SIR–LDH",
-      kmFrom:      258.0, kmTo: 312.0,
-      durationMinutes: 180,
-      overdueDays:  55, cumulativeGmt: 0.0, tqiScore: 44.0,
-      trackId:     "trk-dn",
-      requestedDate: new Date("2026-09-08"),
-    },
-    {
-      id:          "wo-tdms-003",
-      department:  "TDMS",
-      description: "Pantograph Inspection & OHE Height Survey — PNP–KKDE",
-      kmFrom:      90.0, kmTo: 124.0,
-      durationMinutes: 120,
-      overdueDays:  25, cumulativeGmt: 0.0, tqiScore: 62.0,
-      trackId:     "trk-dn",
-      requestedDate: new Date("2026-09-08"),
-    },
-  ];
-
-  for (const wo of workOrderDefs) {
-    await prisma.workOrder.upsert({
-      where:  { id: wo.id },
-      update: {},
-      create: {
-        id:               wo.id,
-        department:       wo.department,
-        description:      wo.description,
-        kmFrom:           wo.kmFrom,
-        kmTo:             wo.kmTo,
-        durationMinutes:  wo.durationMinutes,
-        overdueDays:      wo.overdueDays,
-        cumulativeGmt:    wo.cumulativeGmt,
-        tqiScore:         wo.tqiScore,
-        trackId:          wo.trackId,
-        requestedDate:    wo.requestedDate,
-        provenance:       "LIVE",
-        status:           "PENDING",
-      },
-    });
-    console.log(`  ✔ WorkOrder: [${wo.department}] ${wo.description.substring(0, 40)}…`);
+  // Read scored defects map
+  const scoredPath = path.join(dataDir, "scored_defects.csv");
+  const scoredMap: Record<string, { priority_score: string; explanation: string }> = {};
+  if (fs.existsSync(scoredPath)) {
+    const scoredRows = parseCSV(fs.readFileSync(scoredPath, "utf8"));
+    for (const r of scoredRows) {
+      scoredMap[r.defect_id] = {
+        priority_score: r.priority_score,
+        explanation: r.explanation,
+      };
+    }
   }
+
+  // Clear old scheduled blocks and work orders
+  await prisma.scheduledBlock.deleteMany({});
+  await prisma.workOrder.deleteMany({});
+
+  const defectsPath = path.join(dataDir, "4_defects_maintenance.csv");
+  let seededWOCount = 0;
+
+  if (fs.existsSync(defectsPath)) {
+    const defectRows = parseCSV(fs.readFileSync(defectsPath, "utf8"));
+
+    for (let idx = 0; idx < defectRows.length; idx++) {
+      const row = defectRows[idx];
+      const sec = SECTION_BASES[row.section_id] ?? { baseKm: 60.0, lenKm: 30.0, name: row.section_id };
+      const rawKm = parseFloat(row.km_point) || 10.0;
+      const kmOffset = Math.abs(rawKm % sec.lenKm);
+      const kmFrom = Math.round(Math.min(308.0, Math.max(2.0, sec.baseKm + kmOffset)) * 10) / 10;
+      const repairHours = parseFloat(row.estimated_repair_hours) || 2.0;
+      const kmTo = Math.min(312.0, Math.round((kmFrom + Math.max(0.8, Math.min(3.0, repairHours * 0.4))) * 10) / 10);
+      const durationMinutes = Math.max(60, Math.min(300, Math.round(repairHours * 60)));
+      const department = row.source_system === "TMS" ? "TMS" : row.source_system === "SMMS" ? "SMMS" : "TDMS";
+      const priority = row.severity === "Critical" ? 1 : row.severity === "Major" ? 2 : 3;
+      const status = row.status === "Resolved" ? "COMPLETED" : row.status === "Scheduled" ? "SCHEDULED" : "PENDING";
+      const overdueDays = parseInt(row.overdue_days) || 0;
+      const scoredInfo = scoredMap[row.defect_id];
+      const assetRisk = scoredInfo ? parseFloat(scoredInfo.priority_score) : (priority === 1 ? 92.0 : priority === 2 ? 74.0 : 45.0);
+      const penaltyWeight = Math.round(100 + 99 * assetRisk);
+      const trackId = idx % 2 === 0 ? upTrack.id : dnTrack.id;
+
+      await prisma.workOrder.create({
+        data: {
+          id:               row.defect_id,
+          department:       department as "TMS" | "SMMS" | "TDMS",
+          description:      `[${row.defect_id}] ${row.severity} — ${row.defect_type} (${sec.name})`,
+          kmFrom:           kmFrom,
+          kmTo:             kmTo,
+          durationMinutes:  durationMinutes,
+          priority:         priority,
+          overdueDays:      overdueDays,
+          cumulativeGmt:    Math.round((120.0 + (idx * 3.7) % 250) * 10) / 10,
+          tqiScore:         priority === 1 ? 38.0 : priority === 2 ? 56.0 : 75.0,
+          assetRisk:        round1(assetRisk),
+          penaltyWeight:    penaltyWeight,
+          trackId:          trackId,
+          requestedDate:    new Date(row.date_reported || "2026-09-08"),
+          provenance:       "LIVE",
+          status:           status,
+        },
+      });
+      seededWOCount++;
+    }
+  }
+  console.log(`  ✔ Seeded ${seededWOCount} authentic Work Orders from Data training`);
+
+  // ── Operational Events from Data training (9_disruption_events.csv) ──────
+  console.log("\n⚡ Loading 12 Operational Events from Data training…");
+  await prisma.operationalEvent.deleteMany({});
+  const eventsPath = path.join(dataDir, "9_disruption_events.csv");
+  let seededEventCount = 0;
+
+  if (fs.existsSync(eventsPath)) {
+    const eventRows = parseCSV(fs.readFileSync(eventsPath, "utf8"));
+    const eventTypeMap: Record<string, string> = {
+      "VIP Train Movement (Block Cancelled)": "VIP_MOVEMENT",
+      "Weather Alert Issued": "WEATHER_MONSOON",
+      "Emergency Speed Restriction Imposed": "SPEED_RESTRICTION",
+      "Machine Breakdown": "MACHINE_BREAKDOWN",
+      "Goods Train Rescheduled": "GOODS_RESCHEDULE",
+      "New Critical Defect Reported": "RAIL_FRACTURE",
+      "Crew Shortage": "CREW_SHORTAGE",
+    };
+
+    for (const ev of eventRows) {
+      const sec = SECTION_BASES[ev.section_id] ?? { baseKm: 100.0, lenKm: 30.0, name: ev.section_id };
+      const kmFrom = sec.baseKm;
+      const kmTo = Math.min(312.0, sec.baseKm + sec.lenKm);
+      const isCrit = ev.event_type.includes("Critical") || ev.event_type.includes("VIP");
+      const isWarn = ev.event_type.includes("Weather") || ev.event_type.includes("Speed") || ev.event_type.includes("Breakdown");
+      const severity = isCrit ? "CRITICAL" : isWarn ? "CAUTION" : "INFO";
+
+      await prisma.operationalEvent.create({
+        data: {
+          id:             ev.event_id,
+          eventType:      eventTypeMap[ev.event_type] ?? "DELAY",
+          description:    `[${ev.section_id} ${ev.division}] ${ev.event_type}: ${ev.description}`,
+          severity:       severity,
+          kmFrom:         kmFrom,
+          kmTo:           kmTo,
+          delayMinutes:   isCrit ? 45 : isWarn ? 30 : 15,
+          affectedTrains: JSON.stringify(["22439", "12011", "12497"]),
+          isActive:       true,
+          provenance:     "LIVE",
+        },
+      });
+      seededEventCount++;
+    }
+  }
+  console.log(`  ✔ Seeded ${seededEventCount} Operational Events from Data training`);
 
   // ── Digital Twin Knowledge Graph Assets ─────────────────────────────────
   console.log("\n🌐 Seeding Digital Twin Knowledge Graph Assets & Dependencies…");
@@ -515,6 +567,31 @@ async function main() {
       });
       console.log(`  ✔ Dependency: ${d.source} ──(${d.type})──► ${d.target}`);
     }
+  }
+
+  // ── Seed Demo RBAC User Accounts ──────────────────────────────────────────
+  console.log("\n👤 Seeding RBAC Demo User Accounts…");
+  const demoUsers = [
+    { employeeId: "ADMIN001", name: "Rajesh Kumar", role: "SYSTEM_ADMIN", designation: "Chief Operations Manager", division: "DLI" },
+    { employeeId: "DRM001",   name: "Priya Sharma", role: "DRM", designation: "Divisional Railway Manager — Delhi", division: "DLI" },
+    { employeeId: "OBS001",   name: "Arjun Singh",  role: "OBSERVER", designation: "External Stakeholder / Auditor", division: "NR" },
+  ];
+
+  for (const u of demoUsers) {
+    await prisma.user.upsert({
+      where: { employeeId: u.employeeId },
+      update: {},
+      create: {
+        employeeId:   u.employeeId,
+        name:         u.name,
+        role:         u.role,
+        designation:  u.designation,
+        division:     u.division,
+        passwordHash: "demo",
+        isActive:     true,
+      },
+    });
+    console.log(`  ✔ User: [${u.role}] ${u.employeeId} — ${u.name}`);
   }
 
   console.log("\n✅ Database seed complete.");

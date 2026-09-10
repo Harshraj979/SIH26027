@@ -23,9 +23,14 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
+import os
+import sys
+
+# Ensure local python_engine modules can be imported
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import numpy as np
 from ortools.sat.python import cp_model
-from sklearn.ensemble import HistGradientBoostingRegressor
 from agents import ArbitrationAgent
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -40,57 +45,163 @@ RUSH_WINDOWS = [               # (start_min, end_min) — block forbidden
 HORIZON_MINUTES = MINUTES_IN_DAY  # 24-hour planning horizon
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ML ASSET CRITICALITY SCORER
+# ML ASSET CRITICALITY SCORER (Trained Model & Feature Pipeline from Data training)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_risk_scorer():
+import os
+import joblib
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+
+class RailwayFeaturePipeline:
     """
-    Train a HistGradientBoostingRegressor on synthetic-but-realistic asset
-    health data. In production this would be trained on historical inspection
-    records from the Central Railway Asset Management System (CRAMS).
-
-    Features: [overdue_days, cumulative_gmt, tqi_score]
-    Target: asset_failure_risk (0–100)
+    Fitted feature engineering pipeline matching block_planning_pipeline.py.
+    Provides transform() method for defect / work order records.
     """
-    rng = np.random.default_rng(42)
-    n = 2000
+    def __init__(self, reference_date=None):
+        self.reference_date = pd.to_datetime(reference_date) if reference_date else pd.to_datetime('2026-09-30')
+        self.scaler_traffic = MinMaxScaler()
+        self.scaler_goods = MinMaxScaler()
+        self.scaler_window = MinMaxScaler()
+        self.departments = ['Engineering', 'S&T', 'TRD']
+        self.feature_columns = [
+            'severity_numeric',
+            'days_overdue',
+            'days_since_reported',
+            'repair_hours',
+            'section_traffic_norm',
+            'goods_forecast_norm',
+            'window_scarcity',
+            'electrified_flag',
+            'status_flag',
+            'dept_Engineering',
+            'dept_S&T',
+            'dept_TRD'
+        ]
+        self.is_fitted = False
 
-    overdue_days   = rng.uniform(0, 365, n)
-    cumulative_gmt = rng.uniform(0, 500, n)        # Gross Metric Tonnes
-    tqi_score      = rng.uniform(0, 100, n)        # Track Quality Index (higher = better)
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        df_out = pd.DataFrame(index=df.index)
+        sev_map = {'Critical': 3, 'Major': 2, 'Minor': 1, 1: 3, 2: 2, 3: 1}
+        df_out['severity_numeric'] = df.get('severity', pd.Series('Major', index=df.index)).map(sev_map).fillna(2).astype(float)
+        df_out['days_overdue'] = df.get('overdue_days', df.get('overdueDays', pd.Series(0, index=df.index))).fillna(0).astype(float)
 
-    # Physics-informed ground truth
-    risk = (
-        0.15 * overdue_days
-        + 0.08 * cumulative_gmt
-        - 0.30 * tqi_score        # good TQI reduces risk
-        + rng.normal(0, 3, n)
-    )
-    risk = np.clip(risk, 0, 100)
+        if 'date_reported' in df.columns:
+            rep_dates = pd.to_datetime(df['date_reported'])
+            df_out['days_since_reported'] = (self.reference_date - rep_dates).dt.days.clip(lower=0).astype(float)
+        else:
+            df_out['days_since_reported'] = df_out['days_overdue'] + 10.0
 
-    X = np.column_stack([overdue_days, cumulative_gmt, tqi_score])
-    clf = HistGradientBoostingRegressor(
-        max_iter=200, max_depth=5, learning_rate=0.05, random_state=42
-    )
-    clf.fit(X, risk)
-    print("[ML] Asset risk model trained.", file=sys.stderr)
-    return clf
+        dur = df.get('durationMinutes', pd.Series(120, index=df.index))
+        df_out['repair_hours'] = df.get('estimated_repair_hours', dur / 60.0).fillna(2.0).astype(float)
+
+        trf = df['avg_daily_trains'].values.reshape(-1, 1) if 'avg_daily_trains' in df.columns else np.full((len(df), 1), 110.0)
+        df_out['section_traffic_norm'] = self.scaler_traffic.transform(trf).flatten()
+
+        gf = df['goods_forecast_7day'].values.reshape(-1, 1) if 'goods_forecast_7day' in df.columns else np.full((len(df), 1), 100.0)
+        df_out['goods_forecast_norm'] = self.scaler_goods.transform(gf).flatten()
+
+        win = df['available_window_minutes'].clip(lower=10.0).values.reshape(-1, 1) if 'available_window_minutes' in df.columns else np.full((len(df), 1), 120.0)
+        df_out['window_scarcity'] = self.scaler_window.transform(1.0 / win).flatten()
+
+        df_out['electrified_flag'] = (df.get('electrified', pd.Series('Y', index=df.index)) == 'Y').astype(float)
+        df_out['status_flag'] = ((df.get('status') == 'Overdue') | (df_out['days_overdue'] > 0)).astype(float)
+
+        dept_series = df.get('department', pd.Series('Engineering', index=df.index))
+        dept_norm = dept_series.map({'TMS': 'Engineering', 'SMMS': 'S&T', 'TDMS': 'TRD'}).fillna(dept_series)
+        for dept in self.departments:
+            df_out[f'dept_{dept}'] = (dept_norm == dept).astype(float)
+
+        return df_out[self.feature_columns]
+
+# Ensure class is discoverable for pickle loading
+sys.modules['__main__'].RailwayFeaturePipeline = RailwayFeaturePipeline
+
+# ── Load trained models & scored defect cache from Data training ─────────────
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data training"))
+MODEL_PATH = os.path.join(DATA_DIR, "priority_model.pkl")
+PIPELINE_PATH = os.path.join(DATA_DIR, "feature_pipeline.pkl")
+SCORED_DEFECTS_CSV = os.path.join(DATA_DIR, "scored_defects.csv")
+
+_TRAINED_MODEL = None
+_FEATURE_PIPELINE = None
+_SCORED_DEFECTS_CACHE = {}
+
+try:
+    if os.path.exists(MODEL_PATH):
+        _TRAINED_MODEL = joblib.load(MODEL_PATH)
+        print(f"[ML] Loaded trained priority model from {MODEL_PATH}", file=sys.stderr)
+    if os.path.exists(PIPELINE_PATH):
+        _FEATURE_PIPELINE = joblib.load(PIPELINE_PATH)
+        print(f"[ML] Loaded fitted feature pipeline from {PIPELINE_PATH}", file=sys.stderr)
+    if os.path.exists(SCORED_DEFECTS_CSV):
+        df_sc = pd.read_csv(SCORED_DEFECTS_CSV)
+        for _, row in df_sc.iterrows():
+            _SCORED_DEFECTS_CACHE[str(row['defect_id'])] = {
+                'priority_score': float(row['priority_score']),
+                'explanation': str(row['explanation']),
+                'severity': str(row['severity']),
+                'defect_type': str(row['defect_type']),
+            }
+        print(f"[ML] Loaded {_SCORED_DEFECTS_CACHE.__len__()} precomputed defect explanations", file=sys.stderr)
+except Exception as e:
+    print(f"[ML Warning] Failed to load trained artifacts: {e}", file=sys.stderr)
 
 
-def score_work_orders(scorer, work_orders: list[dict]) -> list[dict]:
+def score_work_orders(work_orders: list[dict]) -> list[dict]:
     """
-    Score each work order and compute solver penalty weight.
-    penalty_weight = 100 + 9900 * (risk / 100)  →  range [100, 10000]
+    Score each work order using the trained XGBoost priority model and feature pipeline.
+    If the defect ID exists in the trained scored_defects.csv, uses the precomputed
+    score and SHAP natural-language explanation. Otherwise, transforms domain features
+    and executes live inference.
     """
     scored = []
     for wo in work_orders:
-        overdue_days   = wo.get("overdueDays", 0)
-        cumulative_gmt = wo.get("cumulativeGmt", 0)
-        tqi_score      = wo.get("tqiScore", 50)
-        X = np.array([[overdue_days, cumulative_gmt, tqi_score]])
-        risk = float(np.clip(scorer.predict(X)[0], 0, 100))
+        wo_id = str(wo.get("id", ""))
+        cached = _SCORED_DEFECTS_CACHE.get(wo_id)
+
+        if cached is not None:
+            risk = cached['priority_score']
+            explanation = cached['explanation']
+        elif _TRAINED_MODEL is not None and _FEATURE_PIPELINE is not None:
+            try:
+                # Prepare single-row DataFrame for inference
+                df_row = pd.DataFrame([{
+                    'department': wo.get('department', 'TMS'),
+                    'severity': wo.get('severity', 'Critical' if wo.get('priority', 2) == 1 else 'Major' if wo.get('priority', 2) == 2 else 'Minor'),
+                    'overdueDays': wo.get('overdueDays', 0),
+                    'durationMinutes': wo.get('durationMinutes', 120),
+                    'avg_daily_trains': 120.0,
+                    'goods_forecast_7day': 100.0,
+                    'available_window_minutes': 120.0,
+                    'electrified': 'Y',
+                    'status': 'Open',
+                }])
+                X = _FEATURE_PIPELINE.transform(df_row)
+                pred = float(_TRAINED_MODEL.predict(X)[0])
+                risk = float(np.clip(pred, 0.0, 100.0))
+                explanation = (
+                    f"Defect {wo_id} ({wo.get('department')} km {wo.get('kmFrom', 0):.1f}–{wo.get('kmTo', 0):.1f}) "
+                    f"scored {risk:.1f}/100 priority based on XGBoost feature pipeline."
+                )
+            except Exception as exc:
+                print(f"[ML Inference Err] {exc}", file=sys.stderr)
+                risk = float(wo.get("assetRisk") or 50.0)
+                explanation = f"Defect {wo_id} scored {risk:.1f}/100 priority."
+        else:
+            # Fallback heuristic if models not available
+            overdue = wo.get("overdueDays", 0)
+            tqi = wo.get("tqiScore", 60)
+            risk = float(np.clip(0.3 * overdue + (100 - tqi) * 0.5 + 20, 0, 100))
+            explanation = f"Defect {wo_id} scored {risk:.1f}/100 priority."
+
         penalty_weight = int(100 + 99 * risk)  # 100–10000
-        scored.append({**wo, "assetRisk": round(risk, 1), "penaltyWeight": penalty_weight})
+        scored.append({
+            **wo,
+            "assetRisk": round(risk, 1),
+            "penaltyWeight": penalty_weight,
+            "explanation": explanation,
+        })
     return scored
 
 
@@ -202,22 +313,21 @@ def solve(payload: dict) -> dict:
                      "avgRisk": 0.0}
         }
 
+    # ── Score work orders using trained XGBoost model & feature pipeline ────
+    scored   = score_work_orders(raw_wos)
+    clusters = cluster_work_orders(scored)
+
     # ── Multi-Agent Negotiation Layer ───────────────────────────────────────
     monsoon_active = payload.get("monsoonActive", False)
     arbitrator = ArbitrationAgent(monsoon_active=monsoon_active)
-    arbitration_transcript = arbitrator.negotiate(raw_wos)
-
-    # ── Build ML scorer and score work orders ────────────────────────────────
-    scorer   = build_risk_scorer()
-    scored   = score_work_orders(scorer, raw_wos)
-    clusters = cluster_work_orders(scored)
+    arbitration_transcript = arbitrator.negotiate(scored)
 
     # Associate arbitration justifications with clusters
-    just_map = {}
-    for idx, just in enumerate(arbitration_transcript.get("justifications", [])):
-        if idx < len(clusters):
-            clusters[idx]["justification"] = just
-
+    for idx, clu in enumerate(clusters):
+        if idx < len(arbitration_transcript.get("justifications", [])):
+            clu["justification"] = arbitration_transcript["justifications"][idx]
+        elif clu.get("explanation"):
+            clu["justification"] = clu["explanation"]
 
     model = cp_model.CpModel()
 
@@ -240,29 +350,28 @@ def solve(payload: dict) -> dict:
             "dur":     dur,
         })
 
-    # ── Constraint 1: No two blocks on same track overlap (no-overlap) ───────
-    up_intervals  = [bv["interval"] for bv in block_vars if bv["cluster"].get("trackId", "UP") == "UP"]
-    dn_intervals  = [bv["interval"] for bv in block_vars if bv["cluster"].get("trackId", "DN") == "DN"]
-    if len(up_intervals) > 1:
-        model.add_no_overlap(up_intervals)
-    if len(dn_intervals) > 1:
-        model.add_no_overlap(dn_intervals)
-
-    # ── Constraint 2: 10-minute safety headway between consecutive blocks ────
-    # Implemented by padding duration in the no-overlap constraint (done above)
-    # and additionally enforcing pairwise headway:
+    # ── Constraint 1 & 2: Pairwise geographic track conflict & safety headway ──
+    # Two blocks on the same track conflict in time only if their geographic spans
+    # overlap or are within a 15 km safety buffer. Disjoint corridor sections can
+    # execute maintenance concurrently.
     for i in range(len(block_vars)):
         for j in range(i+1, len(block_vars)):
             bv_i = block_vars[i]
             bv_j = block_vars[j]
-            # Only enforce headway on same track
             if bv_i["cluster"].get("trackId") != bv_j["cluster"].get("trackId"):
                 continue
-            b_ij = model.new_bool_var(f"b_{i}_{j}")
-            # If i before j: end_i + HEADWAY <= start_j
-            model.add(bv_i["end"] + HEADWAY_MINUTES <= bv_j["start"]).only_enforce_if(b_ij)
-            # If j before i: end_j + HEADWAY <= start_i
-            model.add(bv_j["end"] + HEADWAY_MINUTES <= bv_i["start"]).only_enforce_if(b_ij.negated())
+
+            # Check geographic proximity buffer (15.0 km)
+            geo_conflict = (
+                min(bv_i["cluster"]["kmTo"], bv_j["cluster"]["kmTo"]) + 15.0 >=
+                max(bv_i["cluster"]["kmFrom"], bv_j["cluster"]["kmFrom"])
+            )
+
+            if geo_conflict:
+                b_ij = model.new_bool_var(f"geo_b_{i}_{j}")
+                # Either i ends before j starts (with headway), or j ends before i starts
+                model.add(bv_i["end"] + HEADWAY_MINUTES <= bv_j["start"]).only_enforce_if(b_ij)
+                model.add(bv_j["end"] + HEADWAY_MINUTES <= bv_i["start"]).only_enforce_if(b_ij.negated())
 
     # ── Constraint 3: Rush-hour curfew ──────────────────────────────────────
     for bv in block_vars:

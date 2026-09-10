@@ -1,0 +1,13 @@
+event_id,date,section_id,division,event_type,description,requires_replan
+EVT001,2026-09-05,SEC011,Ferozepur,VIP Train Movement (Block Cancelled),VIP special train movement announced; approved block window revoked.,Yes
+EVT002,2026-09-08,SEC012,Lucknow,Weather Alert Issued,IMD monsoon alert issued; reduced safe working window for tonight.,Yes
+EVT003,2026-09-10,SEC008,Lucknow,Emergency Speed Restriction Imposed,Speed restriction imposed following inspection; adjacent work reprioritized.,Yes
+EVT004,2026-09-11,SEC003,Ferozepur,Machine Breakdown,Tamping machine breakdown; mechanized work for tonight cannot proceed as planned.,Yes
+EVT005,2026-09-13,SEC004,Ferozepur,Weather Alert Issued,IMD monsoon alert issued; reduced safe working window for tonight.,Yes
+EVT006,2026-09-14,SEC012,Lucknow,VIP Train Movement (Block Cancelled),VIP special train movement announced; approved block window revoked.,Yes
+EVT007,2026-09-15,SEC002,Ambala,VIP Train Movement (Block Cancelled),VIP special train movement announced; approved block window revoked.,Yes
+EVT008,2026-09-19,SEC008,Lucknow,Goods Train Rescheduled,Freight corridor reprioritized; goods train shifted into planned maintenance window.,Yes
+EVT009,2026-09-20,SEC003,Ferozepur,Goods Train Rescheduled,Freight corridor reprioritized; goods train shifted into planned maintenance window.,Yes
+EVT010,2026-09-22,SEC003,Ferozepur,Machine Breakdown,Tamping machine breakdown; mechanized work for tonight cannot proceed as planned.,Yes
+EVT011,2026-09-23,SEC008,Lucknow,New Critical Defect Reported,Sudden rail fracture detected during patrol; requires immediate block.,Yes
+EVT012,2026-09-28,SEC007,Lucknow,Crew Shortage,Maintenance gang short-staffed due to leave; planned tasks at risk.,Yes

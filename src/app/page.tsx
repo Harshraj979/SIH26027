@@ -15,6 +15,8 @@ import WorkOrderPanel from "@/components/WorkOrderPanel";
 import KPIGauges from "@/components/KPIGauges";
 import EventPanel, { EventPayload } from "@/components/EventPanel";
 import MasterStringChart from "@/components/MasterStringChart";
+import BlockScheduleRegistry from "@/components/BlockScheduleRegistry";
+import CorridorTimelineGantt from "@/components/CorridorTimelineGantt";
 import MultiAgentNegotiationModal from "@/components/MultiAgentNegotiationModal";
 import DigitalTwinDrawer from "@/components/DigitalTwinDrawer";
 import WhatIfSimulator, { SimulationParams } from "@/components/WhatIfSimulator";
@@ -53,6 +55,7 @@ function MainApp() {
   const [arbitrationTranscript, setArbitrationTranscript] = useState<ArbitrationTranscript | null>(null);
   const [horizon, setHorizon]                           = useState<Horizon>("DAILY");
   const [activeTab, setActiveTab]                       = useState<"schedule" | "workorders" | "events" | "agents">("schedule");
+  const [scheduleSubTab, setScheduleSubTab]             = useState<"gantt" | "registry" | "chart" | "delays">("gantt");
 
   // ── Loading ─────────────────────────────────────────────────────────────────
   const [isOptimizing, setIsOptimizing]                 = useState(false);
@@ -338,124 +341,159 @@ function MainApp() {
       </div>
 
       {/* ── Action Toolbar ──────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2 flex flex-wrap items-center gap-2 shrink-0">
-        {/* Horizon selector */}
-        <div className="flex items-center gap-1 border border-gray-300 rounded overflow-hidden text-xs">
-          {(["DAILY", "WEEKLY", "MONTHLY"] as Horizon[]).map((h) => (
+      <div className="bg-white border-b border-slate-200 px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Horizon selector */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
+            {(["DAILY", "WEEKLY", "MONTHLY"] as Horizon[]).map((h) => (
+              <button
+                key={h}
+                onClick={() => setHorizon(h)}
+                className={`px-3 py-1 rounded-md font-semibold transition-all ${
+                  horizon === h
+                    ? "bg-white text-[#1a3c6e] shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                {HORIZON_LABELS[h]}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-5 w-px bg-slate-200 hidden sm:block" />
+
+          {/* Primary Action: Optimize */}
+          <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
             <button
-              key={h}
-              onClick={() => setHorizon(h)}
-              className={`px-3 py-1.5 transition-colors ${
-                horizon === h
-                  ? "bg-[#1a3c6e] text-white font-semibold"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+              id="btn-optimize"
+              onClick={handleOptimize}
+              disabled={isOptimizing}
+              className="flex items-center gap-2 bg-[#1a3c6e] hover:bg-[#14305a] disabled:bg-slate-300 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-xs transition-colors"
             >
-              {HORIZON_LABELS[h]}
+              {isOptimizing ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Solving CP-SAT Model…</span>
+                </>
+              ) : (
+                <>
+                  <span>▶</span>
+                  <span>Run Block Optimiser</span>
+                </>
+              )}
             </button>
-          ))}
+          </RoleGate>
+
+          {/* Multi-Agent Arbitration */}
+          <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
+            <button
+              id="btn-negotiate"
+              onClick={() => { if (!arbitrationTranscript) handleNegotiate(false); setIsNegotiationOpen(true); }}
+              className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors"
+            >
+              <span>🤝</span>
+              <span>Multi-Agent Scheduling</span>
+            </button>
+          </RoleGate>
+
+          {/* Live Disruption Demo */}
+          <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
+            <button
+              id="btn-live-demo"
+              onClick={handleTriggerLiveDemo}
+              disabled={isLiveDemoRunning}
+              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 disabled:bg-slate-200 text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors"
+            >
+              {isLiveDemoRunning ? (
+                <>
+                  <span className="w-3 h-3 border-2 border-amber-900 border-t-transparent rounded-full animate-spin" />
+                  <span>Simulating…</span>
+                </>
+              ) : (
+                <>
+                  <span>⚡</span>
+                  <span>Simulate Disruption (Demo)</span>
+                </>
+              )}
+            </button>
+          </RoleGate>
         </div>
 
-        <div className="h-5 w-px bg-gray-200" />
-
-        {/* Optimize */}
-        <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
+        {/* Right side secondary tools */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Digital Twin */}
           <button
-            id="btn-optimize"
-            onClick={handleOptimize}
-            disabled={isOptimizing}
-            className="flex items-center gap-1.5 gov-btn-primary text-xs py-1.5 px-3 disabled:bg-gray-400"
+            id="btn-digital-twin"
+            onClick={() => setIsDigitalTwinOpen(true)}
+            className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors"
           >
-            {isOptimizing ? (
-              <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Computing…</span></>
-            ) : "▶ Run Block Optimiser"}
+            <span>🗺️</span>
+            <span>Digital Twin (312 km)</span>
           </button>
-        </RoleGate>
 
-        {/* Multi-Agent Negotiation */}
-        <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
-          <button
-            id="btn-negotiate"
-            onClick={() => { if (!arbitrationTranscript) handleNegotiate(false); setIsNegotiationOpen(true); }}
-            className="flex items-center gap-1.5 gov-btn-secondary text-xs py-1.5 px-3"
-          >
-            Multi-Agent Scheduling
-          </button>
-        </RoleGate>
+          {/* What-If Simulator */}
+          <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
+            <button
+              id="btn-what-if"
+              onClick={() => setIsWhatIfOpen(true)}
+              className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors"
+            >
+              <span>🧪</span>
+              <span>What-If Simulator</span>
+            </button>
+          </RoleGate>
 
-        {/* Live Disruption Demo */}
-        <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
-          <button
-            id="btn-live-demo"
-            onClick={handleTriggerLiveDemo}
-            disabled={isLiveDemoRunning}
-            className="flex items-center gap-1.5 text-xs py-1.5 px-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold rounded transition-colors"
-          >
-            {isLiveDemoRunning ? (
-              <><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Simulating…</span></>
-            ) : "⚡ Simulate Disruption (Demo)"}
-          </button>
-        </RoleGate>
-
-        <div className="h-5 w-px bg-gray-200" />
-
-        {/* Digital Twin */}
-        <button
-          id="btn-digital-twin"
-          onClick={() => setIsDigitalTwinOpen(true)}
-          className="gov-btn-secondary text-xs py-1.5 px-3"
-        >
-          Digital Twin (312 km)
-        </button>
-
-        {/* What-If Simulator */}
-        <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
-          <button
-            id="btn-what-if"
-            onClick={() => setIsWhatIfOpen(true)}
-            className="gov-btn-secondary text-xs py-1.5 px-3"
-          >
-            What-If Simulator
-          </button>
-        </RoleGate>
-
-        {/* Field Feedback */}
-        <RoleGate allow={["SYSTEM_ADMIN"]}>
-          <button
-            id="btn-field-feedback"
-            onClick={() => setIsFieldFeedbackOpen(true)}
-            className="gov-btn-secondary text-xs py-1.5 px-3"
-          >
-            Field Execution Log
-          </button>
-        </RoleGate>
+          {/* Field Feedback */}
+          <RoleGate allow={["SYSTEM_ADMIN"]}>
+            <button
+              id="btn-field-feedback"
+              onClick={() => setIsFieldFeedbackOpen(true)}
+              className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors"
+            >
+              <span>📱</span>
+              <span>Field Execution Log</span>
+            </button>
+          </RoleGate>
+        </div>
       </div>
 
       {/* ── Tab Navigation ──────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 px-4 flex gap-0 shrink-0">
+      <div className="bg-white border-b border-slate-200 px-5 flex gap-2 shrink-0">
         {([
-          { id: "schedule",   label: "Block Schedule",       roleRequired: null as ("SYSTEM_ADMIN" | "DRM" | "OBSERVER")[] | null },
-          { id: "workorders", label: "Work Orders",           roleRequired: null as ("SYSTEM_ADMIN" | "DRM" | "OBSERVER")[] | null },
-          { id: "events",     label: "Operational Events",   roleRequired: null as ("SYSTEM_ADMIN" | "DRM" | "OBSERVER")[] | null },
-          { id: "agents",     label: "Agent Decisions",      roleRequired: ["SYSTEM_ADMIN", "DRM"] as ("SYSTEM_ADMIN" | "DRM" | "OBSERVER")[] | null },
+          { id: "schedule",   label: "Block Schedule",       badge: scheduledBlocks.length, roleRequired: null as ("SYSTEM_ADMIN" | "DRM" | "OBSERVER")[] | null },
+          { id: "workorders", label: "Work Orders",           badge: workOrders.length,      roleRequired: null as ("SYSTEM_ADMIN" | "DRM" | "OBSERVER")[] | null },
+          { id: "events",     label: "Operational Events",   badge: events.length,          roleRequired: null as ("SYSTEM_ADMIN" | "DRM" | "OBSERVER")[] | null },
+          { id: "agents",     label: "Agent Decisions & XAI", badge: null,                   roleRequired: ["SYSTEM_ADMIN", "DRM"] as ("SYSTEM_ADMIN" | "DRM" | "OBSERVER")[] | null },
         ]).map((tab) => {
           const hidden = tab.roleRequired && (!user || !tab.roleRequired.includes(user.role as "SYSTEM_ADMIN" | "DRM" | "OBSERVER"));
           if (hidden) return null;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               id={`tab-${tab.id}`}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`gov-tab ${activeTab === tab.id ? "gov-tab-active" : ""}`}
+              className={`px-4 py-3 text-xs font-semibold border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                isActive
+                  ? "text-[#1a3c6e] border-[#FF9933] font-bold"
+                  : "text-slate-500 border-transparent hover:text-slate-900 hover:border-slate-300"
+              }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.badge != null && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                  isActive ? "bg-blue-100 text-[#1a3c6e]" : "bg-slate-100 text-slate-500"
+                }`}>
+                  {tab.badge}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
       {/* ── Main Content ────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex min-h-0 overflow-hidden">
+      <div className="flex-1 flex min-h-0 overflow-hidden bg-[#f8fafc]">
 
         {/* Block Schedule Tab */}
         {activeTab === "schedule" && (
@@ -471,69 +509,225 @@ function MainApp() {
               </div>
             ) : (
               <div className="flex flex-col flex-1 min-h-0">
-                {/* String chart */}
-                <div className="flex-1 overflow-hidden p-3">
-                  <MasterStringChart
-                    stations={stations}
-                    trains={trains}
-                    scheduledBlocks={scheduledBlocks}
-                    horizon={312}
-                    width={1200}
-                    height={540}
-                  />
+                {/* Clean Sub-Navigation Bar */}
+                <div className="bg-white border-b border-slate-200 px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
+                    <button
+                      onClick={() => setScheduleSubTab("gantt")}
+                      className={`px-3 py-1 font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                        scheduleSubTab === "gantt"
+                          ? "bg-white text-[#1a3c6e] shadow-xs"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <span>📊 Section Timeline (Gantt)</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
+                        Primary
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setScheduleSubTab("registry")}
+                      className={`px-3 py-1 font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                        scheduleSubTab === "registry"
+                          ? "bg-white text-[#1a3c6e] shadow-xs"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <span>📋 Block Registry</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 text-[#1a3c6e]">
+                        {scheduledBlocks.length}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setScheduleSubTab("chart")}
+                      className={`px-3 py-1 font-semibold rounded-md transition-all ${
+                        scheduleSubTab === "chart"
+                          ? "bg-white text-[#1a3c6e] shadow-xs"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      📈 Time-Distance Diagram
+                    </button>
+                    <button
+                      onClick={() => setScheduleSubTab("delays")}
+                      className={`px-3 py-1 font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                        scheduleSubTab === "delays"
+                          ? "bg-white text-[#1a3c6e] shadow-xs"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <span>⚠️ Delays &amp; Perturbations</span>
+                      {perturbations.length > 0 ? (
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
+                          {perturbations.length}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
+                          0
+                        </span>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Operational indicators on right */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold">
+                      <span>⚡</span>
+                      <span>{scheduledBlocks.filter((b) => b.isShadowBlock).length} Shadow Bundles</span>
+                    </span>
+                    <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold">
+                      <span>🛡️</span>
+                      <span>100% P1 Trains Protected</span>
+                    </span>
+                  </div>
                 </div>
 
-                {/* Perturbations strip */}
-                <div className="h-52 border-t border-gray-200 bg-white overflow-hidden flex flex-col shrink-0">
-                  <div className="px-4 py-2 border-b border-gray-100 flex items-center gap-3 bg-[#eef2f9]">
-                    <span className="text-xs font-bold text-[#1a3c6e] uppercase tracking-wider">
-                      Train Delays &amp; Perturbations
-                    </span>
-                    {perturbations.length > 0 ? (
-                      <span className="badge-warn">{perturbations.length} affected</span>
-                    ) : (
-                      <span className="badge-ok">All trains on schedule</span>
-                    )}
-                    <span className="ml-auto text-xs text-gray-500">
-                      Priority-1 Punctuality: <strong className="text-green-700">100%</strong>
-                    </span>
+                {/* Sub-view: Section Timeline (Gantt) — Intuitive, Non-overlapping Corridor View */}
+                {scheduleSubTab === "gantt" && (
+                  <div className="flex-1 overflow-hidden p-4 sm:p-5 flex flex-col">
+                    <CorridorTimelineGantt
+                      scheduledBlocks={scheduledBlocks}
+                      stations={stations}
+                    />
                   </div>
-                  <div className="flex-1 overflow-y-auto">
-                    {perturbations.length === 0 ? (
-                      <div className="p-6 text-center text-gray-400 text-sm">
-                        <p>No active delays on Delhi – Ambala – Ludhiana mainline.</p>
-                        <p className="text-xs mt-1 text-gray-300">Run the optimiser or inject an event to evaluate impact.</p>
+                )}
+
+                {/* Sub-view: Block Registry */}
+                {scheduleSubTab === "registry" && (
+                  <div className="flex-1 overflow-hidden">
+                    <BlockScheduleRegistry
+                      scheduledBlocks={scheduledBlocks}
+                      stations={stations}
+                      onSwitchToChart={() => setScheduleSubTab("gantt")}
+                    />
+                  </div>
+                )}
+
+                {/* Sub-view: String Chart */}
+                {scheduleSubTab === "chart" && (
+                  <div className="flex-1 overflow-auto p-4 flex flex-col gap-3">
+                    <div className="flex-1 min-h-[580px] bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+                      <MasterStringChart
+                        stations={stations}
+                        trains={trains}
+                        scheduledBlocks={scheduledBlocks}
+                        horizon={312}
+                        width={1240}
+                        height={600}
+                      />
+                    </div>
+
+                    {/* Collapsible train delay summary strip */}
+                    {perturbations.length > 0 && (
+                      <div className="bg-white rounded-xl border border-amber-200 p-3.5 shadow-xs flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="font-bold text-amber-900">
+                            {perturbations.length} Active Train Delays Detected
+                          </span>
+                          <span className="text-slate-500 hidden sm:inline">
+                            — P1 VIP Trains (Vande Bharat, Rajdhani) remain 100% punctually protected.
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setScheduleSubTab("delays")}
+                          className="text-xs font-semibold text-[#1a3c6e] hover:underline shrink-0"
+                        >
+                          View Delay Details &rarr;
+                        </button>
                       </div>
-                    ) : (
-                      <table className="gov-table">
-                        <thead>
-                          <tr>
-                            <th>Train No.</th>
-                            <th>Station</th>
-                            <th>Scheduled Departure</th>
-                            <th>Delay</th>
-                            <th>Cause / Resolution</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {perturbations.map((p, i) => (
-                            <tr key={i}>
-                              <td className="font-semibold text-[#1a3c6e]">{p.trainNumber}</td>
-                              <td>{p.stationCode}</td>
-                              <td>{p.originalDeparture}</td>
-                              <td>
-                                <span className={p.delayMinutes > 30 ? "text-red-600 font-bold" : "text-amber-700 font-semibold"}>
-                                  +{p.delayMinutes} min
-                                </span>
-                              </td>
-                              <td className="text-gray-600 max-w-xs truncate">{p.cause}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
                     )}
                   </div>
-                </div>
+                )}
+
+                {/* Sub-view: Train Perturbations & Delays */}
+                {scheduleSubTab === "delays" && (
+                  <div className="flex-1 overflow-auto p-4 sm:p-5">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden max-w-6xl mx-auto">
+                      <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+                        <div>
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1a3c6e]">
+                            Train Delays &amp; Single-Line Working (SLW) Routing
+                          </h3>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            Real-time dynamic train delay propagation and dispatch recommendations
+                          </p>
+                        </div>
+                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                          Priority-1 Punctuality: 100%
+                        </span>
+                      </div>
+
+                      {perturbations.length === 0 ? (
+                        <div className="p-12 text-center text-slate-400 text-xs">
+                          <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl font-bold mx-auto mb-3">
+                            ✓
+                          </div>
+                          <p className="font-semibold text-slate-700 text-sm">All Trains Operating On Schedule</p>
+                          <p className="mt-1 max-w-sm mx-auto text-slate-400">
+                            Zero perturbations on the Delhi – Ambala – Ludhiana mainline. Run the optimiser or inject an incident to test conflict handling.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
+                                <th className="py-3 px-4">Train No. &amp; Name</th>
+                                <th className="py-3 px-4">Priority</th>
+                                <th className="py-3 px-4">Station</th>
+                                <th className="py-3 px-4">Scheduled Departure</th>
+                                <th className="py-3 px-4">Delay</th>
+                                <th className="py-3 px-4">Operational Resolution / Cause</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {perturbations.map((p, i) => (
+                                <tr key={i} className="hover:bg-slate-50/80 transition-colors">
+                                  <td className="py-3 px-4 font-bold text-[#1a3c6e]">
+                                    {p.trainNumber}
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                                      p.priority === 1 ? "bg-emerald-50 text-emerald-800 border-emerald-200" :
+                                      p.priority === 2 ? "bg-blue-50 text-blue-800 border-blue-200" :
+                                      "bg-slate-100 text-slate-700 border-slate-200"
+                                    }`}>
+                                      P{p.priority}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4 font-semibold text-slate-800">
+                                    {p.stationCode}
+                                  </td>
+                                  <td className="py-3 px-4 font-mono text-slate-600">
+                                    {p.originalDeparture}
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <span className={`text-xs font-bold tabular-nums ${
+                                      p.delayMinutes > 30 ? "text-rose-600" : "text-amber-700"
+                                    }`}>
+                                      +{p.delayMinutes} min
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4 text-slate-700 max-w-md">
+                                    <div className="flex items-center gap-2">
+                                      {p.slwDiverted && (
+                                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                                          SLW Diverted
+                                        </span>
+                                      )}
+                                      <span>{p.cause}</span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -541,7 +735,7 @@ function MainApp() {
 
         {/* Work Orders Tab */}
         {activeTab === "workorders" && (
-          <div className="flex-1 overflow-auto p-4">
+          <div className="flex-1 overflow-auto p-4 sm:p-5">
             <WorkOrderPanel
               workOrders={workOrders}
               onAddWorkOrder={handleAddWorkOrder}
@@ -552,7 +746,7 @@ function MainApp() {
 
         {/* Events Tab */}
         {activeTab === "events" && (
-          <div className="flex-1 overflow-auto p-4">
+          <div className="flex-1 overflow-auto p-4 sm:p-5">
             <EventPanel
               events={events}
               trains={trains}
@@ -565,56 +759,82 @@ function MainApp() {
         {/* Agent Decisions Tab — DRM + Admin only */}
         {activeTab === "agents" && (
           <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
-            <div className="flex-1 overflow-auto p-4">
-              <div className="gov-card p-4 mb-4">
-                <div className="gov-section-header">Multi-Agent Negotiation Results</div>
+            <div className="flex-1 overflow-auto p-4 sm:p-5">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 max-w-6xl mx-auto space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#1a3c6e]">
+                      Multi-Agent Autonomous Arbitration Results
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Pareto-optimal consensus between Engineering (TMS), Signalling (SMMS), and Traction (TDMS)
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { if (!arbitrationTranscript) handleNegotiate(false); setIsNegotiationOpen(true); }}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#1a3c6e] text-white hover:bg-[#14305a] transition-colors"
+                  >
+                    Open Live Arbitration Dialog
+                  </button>
+                </div>
+
                 {arbitrationTranscript ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {[
-                        { label: "Total Bids Received",    value: arbitrationTranscript.totalBids },
-                        { label: "Shadow Blocks Bundled",  value: arbitrationTranscript.shadowBlocksCount },
-                        { label: "Corridor Minutes Saved", value: `${arbitrationTranscript.corridorMinutesSaved} min` },
-                        { label: "Blocks Finalised",       value: arbitrationTranscript.bundledBlocks },
+                        { label: "Total Bids Received",    value: arbitrationTranscript.totalBids, color: "text-[#1a3c6e]" },
+                        { label: "Shadow Blocks Bundled",  value: arbitrationTranscript.shadowBlocksCount, color: "text-rose-700" },
+                        { label: "Corridor Minutes Saved", value: `${arbitrationTranscript.corridorMinutesSaved} min`, color: "text-emerald-700" },
+                        { label: "Blocks Finalised",       value: arbitrationTranscript.bundledBlocks, color: "text-slate-800" },
                       ].map((m) => (
-                        <div key={m.label} className="bg-[#eef2f9] rounded p-3 text-center">
-                          <div className="text-xl font-bold text-[#1a3c6e]">{m.value}</div>
-                          <div className="text-xs text-gray-500 mt-0.5">{m.label}</div>
+                        <div key={m.label} className="bg-slate-50 rounded-xl p-3.5 border border-slate-200 text-center">
+                          <div className={`text-xl font-bold ${m.color}`}>{m.value}</div>
+                          <div className="text-[11px] text-slate-500 mt-0.5 font-medium">{m.label}</div>
                         </div>
                       ))}
                     </div>
 
-                    <div>
-                      <p className="text-xs font-semibold text-[#1a3c6e] mb-2">Department Satisfaction</p>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2.5">
+                      <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                        Department Satisfaction &amp; Utility Convergence
+                      </p>
                       {Object.entries(arbitrationTranscript.departmentalSatisfaction).map(([dept, score]) => (
-                        <div key={dept} className="flex items-center gap-3 mb-1.5">
-                          <span className="text-xs text-gray-600 w-32 shrink-0">{dept}</span>
-                          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div key={dept} className="flex items-center gap-3">
+                          <span className="text-xs font-semibold text-slate-700 w-36 shrink-0">{dept}</span>
+                          <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${score >= 80 ? "bg-green-500" : score >= 60 ? "bg-amber-500" : "bg-red-500"}`}
+                              className={`h-full rounded-full ${score >= 80 ? "bg-emerald-500" : score >= 60 ? "bg-amber-500" : "bg-rose-500"}`}
                               style={{ width: `${score}%` }}
                             />
                           </div>
-                          <span className="text-xs font-bold text-[#1a3c6e] w-10 text-right">{score.toFixed(0)}%</span>
+                          <span className="text-xs font-bold text-slate-800 w-12 text-right">{score.toFixed(0)}%</span>
                         </div>
                       ))}
                     </div>
 
-                    <div>
-                      <p className="text-xs font-semibold text-[#1a3c6e] mb-2">AI Justification Trail (XAI)</p>
-                      <ul className="space-y-1.5">
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                        AI Justification Audit Trail (XAI)
+                      </p>
+                      <div className="space-y-2">
                         {arbitrationTranscript.justifications.map((j, i) => (
-                          <li key={i} className="text-xs text-gray-700 flex items-start gap-2">
-                            <span className="text-[#FF9933] font-bold shrink-0">›</span>
-                            {j}
-                          </li>
+                          <div key={i} className="text-xs text-slate-700 p-3 bg-slate-50/70 border border-slate-200 rounded-lg flex items-start gap-2.5 leading-relaxed">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#FF9933] mt-1.5 shrink-0" />
+                            <span>{j}</span>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-400 py-6 text-center">
-                    No negotiation has been run yet. Click <strong>Multi-Agent Scheduling</strong> in the toolbar above.
+                  <div className="text-xs text-slate-400 py-10 text-center space-y-2">
+                    <p>No multi-agent arbitration session has been executed yet.</p>
+                    <button
+                      onClick={() => handleNegotiate(false)}
+                      className="text-xs font-bold text-[#1a3c6e] hover:underline"
+                    >
+                      Click here to run Multi-Agent Arbitration now &rarr;
+                    </button>
                   </div>
                 )}
               </div>
