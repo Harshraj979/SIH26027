@@ -2,20 +2,22 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { User } from "@/types/auth";
-import { getUser, login as authLogin, logout as authLogout } from "@/lib/auth";
+import { getUser, login as authLogin, directLogin as authDirectLogin, logout as authLogout } from "@/lib/auth";
 
 interface AuthContextValue {
-  user:    User | null;
-  isReady: boolean;
-  login:   (employeeId: string, password: string) => boolean;
-  logout:  () => void;
+  user:        User | null;
+  isReady:     boolean;
+  login:       (employeeId: string, password: string) => boolean;
+  directLogin: (employeeId: string) => boolean;
+  logout:      () => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
-  user:    null,
-  isReady: false,
-  login:   () => false,
-  logout:  () => {},
+  user:        null,
+  isReady:     false,
+  login:       () => false,
+  directLogin: () => false,
+  logout:      () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -33,13 +35,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, []);
 
+  const directLogin = useCallback((employeeId: string): boolean => {
+    const u = authDirectLogin(employeeId);
+    if (u) { setUser(u); return true; }
+    return false;
+  }, []);
+
   const logout = useCallback(() => {
     authLogout();
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isReady, login, logout }}>
+    <AuthContext.Provider value={{ user, isReady, login, directLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );

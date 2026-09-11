@@ -47,12 +47,28 @@ export default function GovHeader({ onLogout }: Props) {
     return () => clearInterval(timer);
   }, []);
 
-  const displayName = (user && user.name !== "Rajesh Kumar") ? user.name : "Priya Sharma";
-  const displayDesignation = (user && user.name !== "Rajesh Kumar") ? user.designation : "Divisional Railway Manager — Delhi";
-  const displayRole = (user && user.role === "DRM") ? ROLE_LABELS[user.role] : "Divisional Railway Manager";
+  const displayName = user?.name || "Priya Sharma";
+  const displayDesignation = user?.designation || "Divisional Railway Manager — Delhi";
+  const displayRole = user?.role ? ROLE_LABELS[user.role] : "Divisional Railway Manager";
+
+  // Extract clean initials excluding titles like Sh., Smt., Er., Dr.
+  const initials = displayName
+    .replace(/^(Sh\.|Smt\.|Er\.|Dr\.)\s*/i, "")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "IR";
 
   return (
-    <header className="w-full shrink-0 bg-[#1a3c6e] text-white shadow-md select-none overflow-hidden">
+    <header 
+      className="w-full shrink-0 text-white shadow-xl select-none overflow-hidden border-b border-black/40"
+      style={{
+        backgroundColor: "#000085",
+        backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.25) 100%)",
+      }}
+    >
       {/* Indian Tricolor top accent bar */}
       <div
         className="h-1 w-full shrink-0"
@@ -93,7 +109,7 @@ export default function GovHeader({ onLogout }: Props) {
             <div className="flex items-center gap-1.5">
               <h1 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-1 shrink-0">
                 <span>RailBlock</span>
-                <span className="text-[#FF9933] font-black">AI</span>
+                <span className="text-[#FF9933] font-black text-xs px-1 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">AI</span>
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-white/15 text-blue-100 border border-white/20 whitespace-nowrap shrink-0">
                 Northern Railway · Delhi
@@ -123,7 +139,7 @@ export default function GovHeader({ onLogout }: Props) {
           {/* Vertical Divider */}
           <div className="h-5 w-px bg-white/20 shrink-0 hidden md:block" />
 
-          {/* 2. Clock & Date: 09:41 pm IST / Thu, 10 Sept */}
+          {/* 2. Clock & Date */}
           <div className="flex flex-col items-end text-right shrink-0">
             <span className="text-xs font-bold text-white tabular-nums tracking-wide whitespace-nowrap leading-tight">
               {timeStr}
@@ -136,11 +152,11 @@ export default function GovHeader({ onLogout }: Props) {
           {/* Vertical Divider */}
           <div className="h-5 w-px bg-white/20 shrink-0" />
 
-          {/* 3. User Avatar & Details: PS / Priya Sharma / Divisional Railway Manager — Delhi / Divisional Railway Manager */}
+          {/* 3. User Avatar & Details */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Avatar Pill with Initials (PS) */}
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-[#1a3c6e] font-black flex items-center justify-center text-xs shadow-sm border border-white/30 shrink-0">
-              PS
+            {/* Avatar Pill with Initials */}
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-[#08182f] font-black flex items-center justify-center text-xs shadow-sm border border-white/30 shrink-0">
+              {initials}
             </div>
 
             {/* Name and Designation */}
@@ -155,7 +171,7 @@ export default function GovHeader({ onLogout }: Props) {
 
             {/* Role Badge */}
             <div className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-white/15 text-blue-100 border border-white/25 whitespace-nowrap hidden lg:block">
-              {displayRole}
+              {user?.department ? `${user.department} · ` : ""}{displayRole}
             </div>
           </div>
 

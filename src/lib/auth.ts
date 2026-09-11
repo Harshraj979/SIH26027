@@ -8,13 +8,68 @@ import { ROLE_PERMISSIONS } from "@/types/auth";
 
 // ─── Demo user store ──────────────────────────────────────────────────────────
 
-interface DemoCredential {
+export interface DemoCredential {
   employeeId: string;
   password:   string;
   user:       User;
 }
 
-const DEMO_USERS: DemoCredential[] = [
+export const DEMO_USERS: DemoCredential[] = [
+  // ─── Department Consoles (IR-RBAC Tier 1 Authorized) ───────────────
+  {
+    employeeId: "EMP-ENG-8821",
+    password:   "eng@123",
+    user: {
+      id:          "u-eng-8821",
+      employeeId:  "EMP-ENG-8821",
+      name:        "Sh. Harsh Savalia",
+      role:        "DRM",
+      designation: "Sr. DEN (Delhi Division)",
+      division:    "DLI",
+      department:  "TMS",
+    },
+  },
+  {
+    employeeId: "EMP-ST-4419",
+    password:   "st@123",
+    user: {
+      id:          "u-st-4419",
+      employeeId:  "EMP-ST-4419",
+      name:        "Smt. Khush Patel",
+      role:        "DRM",
+      designation: "Sr. DSTE / Signalling (Delhi Division)",
+      division:    "DLI",
+      department:  "SMMS",
+    },
+  },
+  {
+    employeeId: "EMP-TRD-9032",
+    password:   "trd@123",
+    user: {
+      id:          "u-trd-9032",
+      employeeId:  "EMP-TRD-9032",
+      name:        "Er. Mann Butani",
+      role:        "DRM",
+      designation: "DEE / TRD Traction (Delhi Division)",
+      division:    "DLI",
+      department:  "TDMS",
+    },
+  },
+  {
+    employeeId: "EMP-CTRL-001",
+    password:   "ctrl@123",
+    user: {
+      id:          "u-ctrl-001",
+      employeeId:  "EMP-CTRL-001",
+      name:        "Sh. Niyati Joshi",
+      role:        "SYSTEM_ADMIN",
+      designation: "Chief Controller / Operating (DOM Office, DLI)",
+      division:    "DLI",
+      department:  "OPERATING",
+    },
+  },
+
+  // ─── Executive & Observer Accounts ───────────────────────────────────
   {
     employeeId: "ADMIN001",
     password:   "admin@123",
@@ -25,6 +80,7 @@ const DEMO_USERS: DemoCredential[] = [
       role:        "SYSTEM_ADMIN",
       designation: "Chief Operations Manager",
       division:    "DLI",
+      department:  "OPERATING",
     },
   },
   {
@@ -58,8 +114,22 @@ const DEMO_USERS: DemoCredential[] = [
 const STORAGE_KEY = "railblock_user";
 
 export function login(employeeId: string, password: string): User | null {
+  const cleanId = employeeId.trim().toUpperCase();
   const found = DEMO_USERS.find(
-    (d) => d.employeeId === employeeId.toUpperCase() && d.password === password
+    (d) => d.employeeId.toUpperCase() === cleanId && d.password === password
+  );
+  if (!found) return null;
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(found.user));
+  }
+  return found.user;
+}
+
+export function directLogin(employeeId: string): User | null {
+  const cleanId = employeeId.trim().toUpperCase();
+  const found = DEMO_USERS.find(
+    (d) => d.employeeId.toUpperCase() === cleanId
   );
   if (!found) return null;
 
@@ -79,19 +149,10 @@ export function getUser(): User | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw === "LOGGED_OUT") return null;
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_USERS[1].user));
-      return DEMO_USERS[1].user;
-    }
-    const parsed = JSON.parse(raw) as User;
-    if (parsed.employeeId === "ADMIN001") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_USERS[1].user));
-      return DEMO_USERS[1].user;
-    }
-    return parsed;
+    if (!raw || raw === "LOGGED_OUT") return null;
+    return JSON.parse(raw) as User;
   } catch {
-    return DEMO_USERS[1].user;
+    return null;
   }
 }
 
@@ -110,4 +171,5 @@ export const DEMO_CREDENTIALS = DEMO_USERS.map((d) => ({
   role:        d.user.role as Role,
   name:        d.user.name,
   designation: d.user.designation,
+  department:  d.user.department,
 }));

@@ -15,6 +15,7 @@ export interface User {
   role: Role;
   designation: string;
   division: string;
+  department?: "TMS" | "SMMS" | "TDMS" | "OPERATING";
 }
 
 /** What each role is allowed to do */
