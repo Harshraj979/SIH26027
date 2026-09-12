@@ -308,10 +308,10 @@ export default function BlockScheduleRegistry({ scheduledBlocks, stations, onSwi
 
                         {/* Location */}
                         <td className="py-3 px-4">
-                          <div className="font-semibold text-[#1a3c6e]">
-                            km {block.kmFrom.toFixed(1)} – {block.kmTo.toFixed(1)}
-                            <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-normal border border-slate-200">
-                              {block.trackId || "UP"}
+                          <div className="font-semibold text-[#1a3c6e] flex items-center gap-1.5 flex-wrap">
+                            <span>km {block.kmFrom.toFixed(1)} – {block.kmTo.toFixed(1)}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 font-bold border border-blue-200">
+                              {block.lineId || block.trackId || "UP_FAST"}
                             </span>
                           </div>
                           <div className="text-[11px] text-slate-500 truncate max-w-[200px]" title={sectionName}>
@@ -337,18 +337,44 @@ export default function BlockScheduleRegistry({ scheduledBlocks, stations, onSwi
                           </div>
                         </td>
 
-                        {/* Block Type */}
+                        {/* Block Type & Balancing Scale Winner */}
                         <td className="py-3 px-4 whitespace-nowrap">
-                          {block.isShadowBlock ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
-                              <span>⚡</span>
-                              <span>Shadow Bundle</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                              Single Block
-                            </span>
-                          )}
+                          <div className="flex flex-col gap-1">
+                            {block.isShadowBlock ? (
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs w-fit">
+                                <span>⚡</span>
+                                <span>Shadow Bundle</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 w-fit">
+                                Single Block
+                              </span>
+                            )}
+                            {block.slotOptionType && (
+                              <span className={`text-[9.5px] font-bold px-1.5 py-0.2 rounded border w-fit ${
+                                block.slotOptionType === "NATURAL_GAP"
+                                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                  : block.slotOptionType === "OFF_PEAK_BACKUP"
+                                  ? "bg-amber-50 text-amber-800 border-amber-200"
+                                  : block.slotOptionType === "HARD_SAFETY_OVERRIDE"
+                                  ? "bg-purple-50 text-purple-800 border-purple-200"
+                                  : "bg-rose-50 text-rose-800 border-rose-200"
+                              }`}>
+                                {block.slotOptionType === "NATURAL_GAP"
+                                  ? "✓ Opt 3: Night Gap (Winner)"
+                                  : block.slotOptionType === "OFF_PEAK_BACKUP"
+                                  ? "Opt 2: Off-Peak (Backup)"
+                                  : block.slotOptionType === "HARD_SAFETY_OVERRIDE"
+                                  ? "⚠️ Hard Safety Override"
+                                  : "Opt 1: Peak"}
+                              </span>
+                            )}
+                            {block.setupSavedMin ? (
+                              <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50/90 px-1 py-0.2 rounded border border-emerald-200 w-fit">
+                                +{block.setupSavedMin}m Setup Saved
+                              </span>
+                            ) : null}
+                          </div>
                         </td>
 
                         {/* ML Risk */}
@@ -430,16 +456,21 @@ export default function BlockScheduleRegistry({ scheduledBlocks, stations, onSwi
 
                     {/* Section details */}
                     <div className="bg-slate-50/80 rounded-lg p-2.5 mb-3 border border-slate-100">
-                      <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center justify-between text-xs flex-wrap gap-1">
                         <span className="font-semibold text-[#1a3c6e]">
                           km {block.kmFrom.toFixed(1)} – {block.kmTo.toFixed(1)}
                         </span>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white text-slate-600 border border-slate-200">
-                          {block.trackId || "UP"} Track
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">
+                          {block.lineId || `${block.trackId || "UP"} Track`}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        {sectionName}
+                      <div className="text-[11px] text-slate-500 mt-0.5 flex items-center justify-between">
+                        <span>{sectionName}</span>
+                        {block.slotOptionType === "NATURAL_GAP" && (
+                          <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                            ✓ Opt 3 Night Gap
+                          </span>
+                        )}
                       </div>
                     </div>
 

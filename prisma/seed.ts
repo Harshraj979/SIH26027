@@ -128,7 +128,60 @@ async function main() {
     console.log(`  ✔ Station: ${s.code} (${s.chainage} km)`);
   }
 
-  // ── Tracks ───────────────────────────────────────────────────────────────
+  // ── Tracks (Quadruple-Track NDLS-LDH Mainline Corridor) ──────────────────
+  const upFastTrack = await prisma.track.upsert({
+    where: { id: "trk-up-fast" },
+    update: {},
+    create: {
+      id:          "trk-up-fast",
+      trackId:     "UP_FAST",
+      kmFrom:      0.0,
+      kmTo:        312.0,
+      trackType:   "MAIN",
+      maxSpeedKmh: 160,
+      corridorId:  corridor.id,
+    },
+  });
+  const dnFastTrack = await prisma.track.upsert({
+    where: { id: "trk-dn-fast" },
+    update: {},
+    create: {
+      id:          "trk-dn-fast",
+      trackId:     "DN_FAST",
+      kmFrom:      0.0,
+      kmTo:        312.0,
+      trackType:   "MAIN",
+      maxSpeedKmh: 160,
+      corridorId:  corridor.id,
+    },
+  });
+  const upSlowTrack = await prisma.track.upsert({
+    where: { id: "trk-up-slow" },
+    update: {},
+    create: {
+      id:          "trk-up-slow",
+      trackId:     "UP_SLOW",
+      kmFrom:      0.0,
+      kmTo:        312.0,
+      trackType:   "LOOP",
+      maxSpeedKmh: 110,
+      corridorId:  corridor.id,
+    },
+  });
+  const dnSlowTrack = await prisma.track.upsert({
+    where: { id: "trk-dn-slow" },
+    update: {},
+    create: {
+      id:          "trk-dn-slow",
+      trackId:     "DN_SLOW",
+      kmFrom:      0.0,
+      kmTo:        312.0,
+      trackType:   "LOOP",
+      maxSpeedKmh: 110,
+      corridorId:  corridor.id,
+    },
+  });
+  // Compatibility aliases
   const upTrack = await prisma.track.upsert({
     where: { id: "trk-up" },
     update: {},
@@ -155,7 +208,7 @@ async function main() {
       corridorId:  corridor.id,
     },
   });
-  console.log("  ✔ Tracks: UP, DN");
+  console.log("  ✔ Quadruple Tracks: UP_FAST, DN_FAST, UP_SLOW, DN_SLOW");
 
   // ── Trains & Timetables ──────────────────────────────────────────────────
   // All times in minutes from midnight (IST)
@@ -409,7 +462,18 @@ async function main() {
       const scoredInfo = scoredMap[row.defect_id];
       const assetRisk = scoredInfo ? parseFloat(scoredInfo.priority_score) : (priority === 1 ? 92.0 : priority === 2 ? 74.0 : 45.0);
       const penaltyWeight = Math.round(100 + 99 * assetRisk);
-      const trackId = idx % 2 === 0 ? upTrack.id : dnTrack.id;
+
+      // Distribute across quadruple lines
+      const lineId = idx % 4 === 0 ? "UP_FAST" : idx % 4 === 1 ? "DN_FAST" : idx % 4 === 2 ? "UP_SLOW" : "DN_SLOW";
+      const trackObj = lineId === "UP_FAST" ? upFastTrack : lineId === "DN_FAST" ? dnFastTrack : lineId === "UP_SLOW" ? upSlowTrack : dnSlowTrack;
+
+      // Nearest depot calculation
+      const nearestDepotDesc = kmFrom <= 45 ? "New Delhi Yard Depot (KM 0.0)" :
+        kmFrom <= 140 ? "Panipat Jn Depot (KM 90.0)" :
+        kmFrom <= 250 ? "Ambala Cantt Depot (KM 197.0)" : "Ludhiana Jn Yard (KM 312.0)";
+      const depotKm = kmFrom <= 45 ? 0.0 : kmFrom <= 140 ? 90.0 : kmFrom <= 250 ? 197.0 : 312.0;
+      const distFromDepot = Math.abs(kmFrom - depotKm);
+      const transitMin = distFromDepot <= 2.0 ? 5 : Math.round((distFromDepot / 30.0) * 60);
 
       await prisma.workOrder.create({
         data: {
@@ -425,7 +489,17 @@ async function main() {
           tqiScore:         priority === 1 ? 38.0 : priority === 2 ? 56.0 : 75.0,
           assetRisk:        round1(assetRisk),
           penaltyWeight:    penaltyWeight,
-          trackId:          trackId,
+          trackId:          trackObj.id,
+          lineId:           lineId,
+          kpMarker:         `KM ${kmFrom.toFixed(1)} / ${Math.floor(kmFrom * 2)}-${Math.floor(kmFrom * 2) + 2}`,
+          defectType:       row.defect_type,
+          ssrStandardMin:   durationMinutes,
+          aiAdjustedMin:    durationMinutes + transitMin,
+          nearestDepot:     nearestDepotDesc,
+          transitMinutes:   transitMin,
+          hardSafetyOverride: assetRisk >= 90.0,
+          horizonType:      assetRisk >= 70.0 ? "WEEKLY" : "MONTHLY",
+          explanation:      scoredInfo?.explanation || `Defect on ${sec.name} line ${lineId} with priority ${assetRisk.toFixed(1)}/100`,
           requestedDate:    new Date(row.date_reported || "2026-09-08"),
           provenance:       "LIVE",
           status:           status,
@@ -433,8 +507,164 @@ async function main() {
       });
       seededWOCount++;
     }
+
+    // ── Explicit Showcase Scenarios as requested in specification ──────────────
+    const showcaseWOs = [
+      {
+        id: "DEF-SHOWCASE-TMS-01",
+        department: "TMS" as const,
+        description: "[CRITICAL] Severe 6m Rail Fracture near Sonipat Outer",
+        kmFrom: 14.0,
+        kmTo: 14.1,
+        lineId: "UP_FAST",
+        trackObj: upFastTrack,
+        durationMinutes: 60,
+        priority: 1,
+        overdueDays: 4,
+        assetRisk: 99.2,
+        hardSafetyOverride: true,
+        defectType: "RAIL_FRACTURE",
+        ssrTaskCode: "TMS-SSR-01",
+        ssrStandardMin: 60,
+        aiAdjustedMin: 69,
+        nearestDepot: "New Delhi Yard Depot (KM 0.0)",
+        transitMinutes: 28,
+        kpMarker: "Section: NDLS-SNP | Line: UP_FAST | KM: 14 / 12-14",
+        explanation: "CRITICAL: Imminent derailment hazard. Priority 99.2/100 triggers Hard Safety Override. Immediate possession forced; SLW detour activated.",
+        horizonType: "WEEKLY" as const,
+      },
+      {
+        id: "DEF-SHOWCASE-TDMS-02",
+        department: "TDMS" as const,
+        description: "[URGENT] Broken 25kV Overhead Insulator & Cantilever Dropper Wear",
+        kmFrom: 14.3,
+        kmTo: 14.5,
+        lineId: "UP_FAST",
+        trackObj: upFastTrack,
+        durationMinutes: 30,
+        priority: 1,
+        overdueDays: 2,
+        assetRisk: 88.5,
+        hardSafetyOverride: false,
+        defectType: "OHE_INSULATOR_BROKEN",
+        ssrTaskCode: "TDMS-SSR-01",
+        ssrStandardMin: 30,
+        aiAdjustedMin: 35,
+        nearestDepot: "New Delhi Yard Depot (KM 0.0)",
+        transitMinutes: 29,
+        kpMarker: "Section: NDLS-SNP | Line: UP_FAST | KM: 14 / 16-18",
+        explanation: "OHE flashover danger on UP_FAST line. Co-located with TMS Rail Fracture; automatically bundled into shared shadow block (+100 Clubbing Bonus).",
+        horizonType: "WEEKLY" as const,
+      },
+      {
+        id: "DEF-SHOWCASE-SMMS-03",
+        department: "SMMS" as const,
+        description: "[CRITICAL] Point Machine Rotary Motor Lock Failure at Panipat Jn",
+        kmFrom: 90.1,
+        kmTo: 90.3,
+        lineId: "UP_FAST",
+        trackObj: upFastTrack,
+        durationMinutes: 45,
+        priority: 1,
+        overdueDays: 3,
+        assetRisk: 94.6,
+        hardSafetyOverride: true,
+        defectType: "POINT_MACHINE_FAILURE",
+        ssrTaskCode: "SMMS-SSR-01",
+        ssrStandardMin: 45,
+        aiAdjustedMin: 50,
+        nearestDepot: "Panipat Jn Maintenance Depot (KM 90.0)",
+        transitMinutes: 5,
+        kpMarker: "Section: PNP Yard | Line: UP_FAST | Point 104-B",
+        explanation: "CRITICAL: Turnout lock detection lost on fast mainline. Score 94.6/100 forces immediate repair possession.",
+        horizonType: "WEEKLY" as const,
+      },
+      {
+        id: "DEF-SHOWCASE-TDMS-04",
+        department: "TDMS" as const,
+        description: "[ROUTINE] Superficial Rusting & Paint Peeling on OHE Mast 210/14",
+        kmFrom: 210.0,
+        kmTo: 210.1,
+        lineId: "UP_SLOW",
+        trackObj: upSlowTrack,
+        durationMinutes: 40,
+        priority: 3,
+        overdueDays: 0,
+        assetRisk: 18.0,
+        hardSafetyOverride: false,
+        defectType: "POLE_RUST",
+        ssrTaskCode: "TDMS-SSR-06",
+        ssrStandardMin: 40,
+        aiAdjustedMin: 40,
+        nearestDepot: "Ambala Cantt Maintenance Depot (KM 197.0)",
+        transitMinutes: 26,
+        kpMarker: "Section: UMB-RPJ | Line: UP_SLOW | Mast 210/14",
+        explanation: "ROUTINE: Cosmetic surface rust on steel structure. Low urgency (18.0/100). Zero train delay permitted; scheduled in Monthly window.",
+        horizonType: "MONTHLY" as const,
+      },
+      {
+        id: "DEF-SHOWCASE-TMS-05",
+        department: "TMS" as const,
+        description: "[ROUTINE] Cess Clearing, Ballast Shoulder Dressing & Weed Removal",
+        kmFrom: 145.0,
+        kmTo: 146.0,
+        lineId: "UP_SLOW",
+        trackObj: upSlowTrack,
+        durationMinutes: 40,
+        priority: 3,
+        overdueDays: 0,
+        assetRisk: 12.0,
+        hardSafetyOverride: false,
+        defectType: "ROUTINE_CLEANING",
+        ssrTaskCode: "TMS-SSR-06",
+        ssrStandardMin: 40,
+        aiAdjustedMin: 40,
+        nearestDepot: "Ambala Cantt Maintenance Depot (KM 197.0)",
+        transitMinutes: 35,
+        kpMarker: "Section: KKDE-KUN | Line: UP_SLOW | KM 145-146",
+        explanation: "ROUTINE: Trackbed grooming and drainage maintenance. Score 12.0/100; routed to Monthly Strategic Corridor plan.",
+        horizonType: "MONTHLY" as const,
+      },
+    ];
+
+    for (const sc of showcaseWOs) {
+      await prisma.workOrder.upsert({
+        where: { id: sc.id },
+        update: {},
+        create: {
+          id: sc.id,
+          department: sc.department,
+          description: sc.description,
+          kmFrom: sc.kmFrom,
+          kmTo: sc.kmTo,
+          durationMinutes: sc.durationMinutes,
+          priority: sc.priority,
+          overdueDays: sc.overdueDays,
+          cumulativeGmt: 180.0,
+          tqiScore: sc.priority === 1 ? 35.0 : 85.0,
+          assetRisk: sc.assetRisk,
+          penaltyWeight: Math.round(100 + 99 * sc.assetRisk),
+          trackId: sc.trackObj.id,
+          lineId: sc.lineId,
+          kpMarker: sc.kpMarker,
+          defectType: sc.defectType,
+          ssrTaskCode: sc.ssrTaskCode,
+          ssrStandardMin: sc.ssrStandardMin,
+          aiAdjustedMin: sc.aiAdjustedMin,
+          nearestDepot: sc.nearestDepot,
+          transitMinutes: sc.transitMinutes,
+          hardSafetyOverride: sc.hardSafetyOverride,
+          horizonType: sc.horizonType,
+          explanation: sc.explanation,
+          requestedDate: new Date("2026-09-12"),
+          provenance: "LIVE",
+          status: "PENDING",
+        },
+      });
+      seededWOCount++;
+    }
   }
-  console.log(`  ✔ Seeded ${seededWOCount} authentic Work Orders from Data training`);
+  console.log(`  ✔ Seeded ${seededWOCount} authentic Work Orders (including 5 showcase scenarios)`);
 
   // ── Operational Events from Data training (9_disruption_events.csv) ──────
   console.log("\n⚡ Loading 12 Operational Events from Data training…");

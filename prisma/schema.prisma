@@ -109,6 +109,21 @@ model WorkOrder {
   requestedDate     DateTime
   completedDate     DateTime?
 
+  // Multi-line and LRS Asset Address
+  lineId            String    @default("UP_FAST") // UP_FAST | DN_FAST | UP_SLOW | DN_SLOW
+  kpMarker          String?             // e.g. "KM 14 / 12-14"
+  defectType        String?             // RAIL_FRACTURE | POINT_MACHINE_FAILURE | OHE_INSULATOR_BROKEN | etc.
+
+  // Standard Schedule of Rates (SSR) & Dynamic AI Adjustment
+  ssrTaskCode       String?             // e.g. "TMS-SSR-01"
+  ssrStandardMin    Int?                // Standard baseline duration from IR manual
+  aiAdjustedMin     Int?                // AI dynamic duration including night/weather/transit/crew
+  nearestDepot      String?             // e.g. "NDLS Yard Depot (KM 0.0)"
+  transitMinutes    Int       @default(0) // Transit time from depot at 30 km/h
+  hardSafetyOverride Boolean  @default(false) // Triggered if urgency > 90
+  explanation       String?             // SHAP / XAI explanation text
+  horizonType       String    @default("WEEKLY") // WEEKLY (tactical >70) | MONTHLY (routine <50)
+
   // ML Risk Scoring inputs
   overdueDays       Int       @default(0)
   cumulativeGmt     Float     @default(0)   // Gross Metric Tonnes
@@ -143,6 +158,15 @@ model ScheduledBlock {
   planDate          DateTime
   provenance        String    @default("MODELED")
   createdAt         DateTime  @default(now())
+
+  // Multi-line & Mathematical Balancing Scale Attributes
+  lineId            String    @default("UP_FAST") // UP_FAST | DN_FAST | UP_SLOW | DN_SLOW
+  slotOptionType    String?             // NATURAL_GAP | OFF_PEAK_BACKUP | PEAK_CLUBBED | HARD_SAFETY_OVERRIDE
+  slotScore         Float?              // Final slot evaluation score
+  delayPenalty      Float?              // Computed train disruption penalty
+  clubbingBonus     Float?              // Clubbing bonus awarded (+100 for multi-dept co-location)
+  setupSavedMin     Int       @default(0) // 20m saved if clubbed
+  horizonType       String    @default("WEEKLY") // WEEKLY | MONTHLY
 
   workOrderId String
   workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])

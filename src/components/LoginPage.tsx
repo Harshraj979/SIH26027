@@ -16,6 +16,7 @@ interface DepartmentRoleInfo {
   badgeBg: string;
   badgeBorder: string;
   scopeSummary: string;
+  icon: string;
 }
 
 const DEPARTMENT_ROLES: DepartmentRoleInfo[] = [
@@ -31,6 +32,7 @@ const DEPARTMENT_ROLES: DepartmentRoleInfo[] = [
     badgeBg: "bg-purple-900/30",
     badgeBorder: "border-purple-500/40 text-purple-300",
     scopeSummary: "Cross-department total visibility • Exclusive approval & time-trim authority • Master string chart optimization",
+    icon: "🎛️",
   },
   {
     deptKey: "TMS",
@@ -44,6 +46,7 @@ const DEPARTMENT_ROLES: DepartmentRoleInfo[] = [
     badgeBg: "bg-blue-900/30",
     badgeBorder: "border-blue-500/40 text-blue-300",
     scopeSummary: "Track maintenance requisitions (BCM, CSM, USFD) • Track geometry & tamping speed limits • Emergency rail repairs",
+    icon: "🛤️",
   },
   {
     deptKey: "SMMS",
@@ -57,6 +60,7 @@ const DEPARTMENT_ROLES: DepartmentRoleInfo[] = [
     badgeBg: "bg-emerald-900/30",
     badgeBorder: "border-emerald-500/40 text-emerald-300",
     scopeSummary: "Interlocking overhaul & point machine testing • Axle counter maintenance • Real-time fail-safe route clearances",
+    icon: "📡",
   },
   {
     deptKey: "TDMS",
@@ -70,6 +74,74 @@ const DEPARTMENT_ROLES: DepartmentRoleInfo[] = [
     badgeBg: "bg-amber-900/30",
     badgeBorder: "border-amber-500/40 text-amber-300",
     scopeSummary: "25kV AC OHE Power Block & PTW Clearances • Contact wire & tower wagon scheduling • Isolator de-energization sync",
+    icon: "⚡",
+  },
+];
+
+interface ZonalNetworkInfo {
+  id: string;
+  label: string;
+  shortName: string;
+  code: string;
+  detail: string;
+  badge: string;
+  icon: string;
+}
+
+const ZONAL_NETWORKS: ZonalNetworkInfo[] = [
+  {
+    id: "ALL_INDIA",
+    label: "All India (Pan-India Unified View)",
+    shortName: "All India (Unified)",
+    code: "FOIS-PAN-INDIA",
+    detail: "Consolidated Master Network • All 5 Active Zones Synchronized",
+    badge: "Master View",
+    icon: "🌐",
+  },
+  {
+    id: "NR",
+    label: "Northern Railway (NR)",
+    shortName: "Northern Railway",
+    code: "NR / DLI",
+    detail: "Delhi Division • Active Corridor: NDLS – UMB – LDH (312 km)",
+    badge: "Active Corridor",
+    icon: "📍",
+  },
+  {
+    id: "WR",
+    label: "Western Railway (WR)",
+    shortName: "Western Railway",
+    code: "WR / BCT",
+    detail: "Mumbai Central Division • High-Density Mainline Network",
+    badge: "Connected",
+    icon: "📍",
+  },
+  {
+    id: "CR",
+    label: "Central Railway (CR)",
+    shortName: "Central Railway",
+    code: "CR / CSMT",
+    detail: "Mumbai CSMT / Bhusawal Division • Central Freight Trunk",
+    badge: "Connected",
+    icon: "📍",
+  },
+  {
+    id: "ER",
+    label: "Eastern Railway (ER)",
+    shortName: "Eastern Railway",
+    code: "ER / HWH",
+    detail: "Howrah Division • Dedicated Coal & Freight Interlock",
+    badge: "Connected",
+    icon: "📍",
+  },
+  {
+    id: "SR",
+    label: "Southern Railway (SR)",
+    shortName: "Southern Railway",
+    code: "SR / MAS",
+    detail: "Chennai Division • Southern High-Speed Rail Corridor",
+    badge: "Connected",
+    icon: "📍",
   },
 ];
 
@@ -80,6 +152,26 @@ export default function LoginPage() {
   const [selectedDeptKey, setSelectedDeptKey] = useState<string>("OPERATING");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Zonal Network Selection Dropdown State
+  const [zoneDropdownOpen, setZoneDropdownOpen] = useState(false);
+  const [selectedZone, setSelectedZone] = useState<ZonalNetworkInfo>(ZONAL_NETWORKS[0]);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setZoneDropdownOpen(false);
+      }
+    };
+    if (zoneDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [zoneDropdownOpen]);
 
   // Live IST Clock (Exact format from screenshot)
   const [timeStr, setTimeStr] = useState("19:39:00 IST");
@@ -211,11 +303,92 @@ export default function LoginPage() {
 
           {/* Right Status Controls */}
           <div className="flex items-center gap-3 ml-auto">
-            <div className="flex items-center gap-2 bg-[#00005a] border border-blue-400/40 rounded-lg px-3 py-1.5 text-xs text-white font-medium shadow-xs">
-              <span>🌐</span>
-              <span className="hidden sm:inline">🇮🇳</span>
-              <span>All India (Pan-India Unified View)</span>
-              <span className="text-blue-300 text-[10px]">▼</span>
+            
+            {/* Interactive Zonal Network Selector Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                id="zonal-network-selector-btn"
+                onClick={() => setZoneDropdownOpen((prev) => !prev)}
+                className="flex items-center gap-2 bg-[#00005a] hover:bg-[#00006e] active:bg-[#00004e] border border-blue-400/40 hover:border-blue-400/70 rounded-lg px-3 py-1.5 text-xs text-white font-medium shadow-xs transition-colors cursor-pointer"
+                aria-expanded={zoneDropdownOpen}
+                aria-haspopup="listbox"
+              >
+                <span>{selectedZone.icon}</span>
+                {selectedZone.id === "ALL_INDIA" && <span className="hidden sm:inline">🇮🇳</span>}
+                <span className="max-w-[180px] sm:max-w-[240px] truncate">{selectedZone.label}</span>
+                <span className={`text-blue-300 text-[10px] transition-transform duration-200 ${zoneDropdownOpen ? "rotate-180" : ""}`}>
+                  ▼
+                </span>
+              </button>
+
+              {/* Dropdown Menu Popover */}
+              {zoneDropdownOpen && (
+                <div 
+                  className="absolute right-0 mt-1.5 w-72 sm:w-84 bg-[#00005a] border border-blue-400/40 rounded-xl shadow-2xl z-50 overflow-hidden"
+                  role="listbox"
+                >
+                  <div className="p-2.5 bg-[#000048] border-b border-blue-900/60 flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-300">
+                      Select Zonal Rail Network
+                    </span>
+                    <span className="text-[10px] text-[#ffba00] font-mono">
+                      5 Active Zones
+                    </span>
+                  </div>
+
+                  <div className="max-h-72 overflow-y-auto p-1 divide-y divide-blue-950/40">
+                    {ZONAL_NETWORKS.map((zone) => {
+                      const isSelected = selectedZone.id === zone.id;
+                      return (
+                        <button
+                          key={zone.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedZone(zone);
+                            setZoneDropdownOpen(false);
+                          }}
+                          className={`w-full text-left p-2.5 rounded-lg transition-colors flex items-start gap-2.5 cursor-pointer ${
+                            isSelected
+                              ? "bg-[#000075] text-white"
+                              : "hover:bg-white/10 text-slate-200"
+                          }`}
+                          role="option"
+                          aria-selected={isSelected}
+                        >
+                          <span className="text-sm mt-0.5 shrink-0">{zone.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-xs font-semibold truncate leading-tight">
+                                {zone.label}
+                              </p>
+                              {isSelected && (
+                                <span className="text-[#ffba00] text-xs font-bold shrink-0">✓</span>
+                              )}
+                            </div>
+                            <p className="text-[10.5px] text-blue-200/80 truncate mt-0.5">
+                              {zone.detail}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[9.5px] font-mono text-slate-300 bg-black/20 px-1 py-0.2 rounded">
+                                {zone.code}
+                              </span>
+                              <span className="text-[9.5px] text-[#ffba00] font-medium">
+                                • {zone.badge}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="p-2 bg-[#000045] border-t border-blue-900/60 text-[10px] text-slate-300 flex items-center justify-between">
+                    <span>Selected: <strong className="text-white">{selectedZone.shortName}</strong></span>
+                    <span className="text-emerald-400 font-semibold">● Online</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1.5 bg-[#112284] border border-blue-500/40 rounded-lg px-3 py-1.5 text-xs text-white font-medium shadow-xs">
@@ -249,87 +422,41 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ── 4. Hero Section: Pure #000075 Navy with Attractive Ambient Depth (NO LINES) ── */}
+      {/* ── 4. Hero Section: Clean & Dignified Indian Railways Royal Navy ──── */}
       <section 
-        className="text-white py-12 sm:py-16 px-4 text-center border-b border-[#000095] relative overflow-hidden shadow-lg"
+        className="text-white py-12 sm:py-16 px-4 text-center border-b border-[#000095] relative overflow-hidden shadow-sm"
         style={{
           backgroundColor: "#000075",
-          backgroundImage: `
-            radial-gradient(ellipse 65% 55% at 50% 35%, rgba(37, 99, 235, 0.45) 0%, rgba(0, 0, 117, 0) 75%),
-            linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.32) 100%)
-          `,
+          backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0) 18%, rgba(0, 0, 0, 0) 80%, rgba(0, 0, 0, 0.25) 100%)",
         }}
       >
-        <div className="relative max-w-4xl mx-auto z-10 flex flex-col items-center">
-          
-          {/* Top Pre-header Pill */}
-          <div className="inline-flex items-center gap-2 bg-[#00005a]/85 backdrop-blur-sm border border-[#ffba00]/30 rounded-full px-3.5 py-1 text-[11px] text-[#ffba00] font-semibold mb-4 shadow-sm">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ffba00] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ffba00]"></span>
-            </span>
-            <span className="tracking-wide uppercase">AI-Driven Corridor Maintenance &amp; Safety Optimization</span>
-          </div>
-
-          {/* Main Titles */}
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight flex flex-wrap items-center justify-center gap-2 sm:gap-3 leading-tight">
-            <span className="text-[#ffba00] drop-shadow-[0_4px_16px_rgba(255,186,0,0.35)]">
+        <div className="relative max-w-4xl mx-auto z-10">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight flex flex-wrap items-center justify-center gap-2 sm:gap-3 leading-tight">
+            <span className="text-[#ffba00]">
               रेल-ब्लॉक पोर्टल
             </span>
-            <span className="text-blue-300/60 font-light mx-1">|</span>
-            <span className="text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+            <span className="text-white/60 font-light">|</span>
+            <span className="text-white">
               RAILBLOCK PORTAL
             </span>
           </h2>
 
-          {/* Subtitles */}
-          <p className="mt-3 text-sm sm:text-base md:text-lg text-white font-medium tracking-wide">
+          <p className="mt-3 text-sm sm:text-base text-slate-100 font-medium tracking-wide">
             भारतीय रेल स्वचालित ब्लॉक नियोजन एवं गलियारा अनुरक्षण प्रणाली
           </p>
-          <p className="text-xs sm:text-sm text-blue-200/90 font-normal tracking-wide mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-blue-200/90 font-normal tracking-wide mt-1">
             AI-Powered Automatic Block Planning &amp; Corridor Maintenance Management System
           </p>
 
-          {/* Catchy 3-Pill Live Status & Corridor Highlights */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 max-w-3xl">
-            <div className="flex items-center gap-2 bg-[#00005a]/90 backdrop-blur-sm border border-white/20 rounded-xl px-3.5 py-2 text-left shadow-sm">
-              <span className="text-lg">📍</span>
-              <div>
-                <p className="text-[10px] uppercase font-bold text-blue-300 leading-none">Corridor Domain</p>
-                <p className="text-xs font-semibold text-white mt-0.5">NDLS – UMB – LDH (312 km)</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 bg-[#00005a]/90 backdrop-blur-sm border border-white/20 rounded-xl px-3.5 py-2 text-left shadow-sm">
-              <span className="text-lg">⚡</span>
-              <div>
-                <p className="text-[10px] uppercase font-bold text-[#ffba00] leading-none">Zero Conflict</p>
-                <p className="text-xs font-semibold text-white mt-0.5">Multi-Dept Sync (P-Way, S&amp;T, TRD)</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 bg-[#00005a]/90 backdrop-blur-sm border border-white/20 rounded-xl px-3.5 py-2 text-left shadow-sm">
-              <span className="text-lg">🛡️</span>
-              <div>
-                <p className="text-[10px] uppercase font-bold text-emerald-400 leading-none">Security Scope</p>
-                <p className="text-xs font-semibold text-white mt-0.5">Tier 1 RBAC Authorized Gateway</p>
-              </div>
-            </div>
+          <div className="mt-4 inline-flex items-center gap-2 bg-[#00005a]/80 border border-white/20 rounded-full px-3.5 py-1 text-[11px] text-blue-100 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>NDLS – UMB – LDH Corridor • 312 km Double-Line Mainline</span>
           </div>
-
-          {/* Gentle Downward Nudge to Single Login Card */}
-          <div className="mt-7 flex items-center justify-center gap-1.5 text-[11.5px] font-semibold text-blue-200/90 uppercase tracking-wider">
-            <span>Select Department Scope &amp; Authenticate Below</span>
-            <svg className="w-4 h-4 text-[#ffba00] animate-bounce ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
-
         </div>
       </section>
 
       {/* ── 5. SINGLE LOGIN LAYOUT WITH RBAC FOR ALL DEPARTMENTS ──────────── */}
-      <main className="flex-1 max-w-[1000px] w-full mx-auto p-4 sm:p-8 flex flex-col justify-center">
+      <main className="flex-1 max-w-[880px] w-full mx-auto p-4 sm:p-8 flex flex-col justify-center">
         
         <div className="bg-white border border-slate-300 rounded-2xl shadow-xl overflow-hidden">
           
@@ -353,15 +480,15 @@ export default function LoginPage() {
                   विभागीय प्रवेश द्वार | Unified Single Sign-On
                 </h3>
                 <p className="text-xs text-blue-100 mt-0.5">
-                  Single login for all departments. Role isolation and permissions validated under IR-RBAC Tier 1.
+                  Role isolation and permissions strictly validated under IR-RBAC Tier 1.
                 </p>
               </div>
             </div>
 
             {/* Live Role Badge */}
-            <div className="self-start sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#00005a] border border-white/20 text-xs">
+            <div className="self-start sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#00005a] border border-white/20 text-xs shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-blue-100">Active Scope:</span>
+              <span className="text-blue-100">Scope:</span>
               <span className="font-bold text-[#ffba00]">{activeRole.deptKey}</span>
             </div>
           </div>
@@ -374,7 +501,7 @@ export default function LoginPage() {
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 1. Select Department Scope / विभाग चुनें:
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {DEPARTMENT_ROLES.map((role) => {
                   const isSelected = activeRole.deptKey === role.deptKey;
                   return (
@@ -390,9 +517,9 @@ export default function LoginPage() {
                             }
                           : undefined
                       }
-                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         isSelected
-                          ? "text-white border-[#000075] shadow-md ring-2 ring-blue-500/30"
+                          ? "text-white border-[#000075] shadow-md ring-2 ring-blue-500/40"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
                       }`}
                     >
@@ -440,7 +567,7 @@ export default function LoginPage() {
                     value={empId}
                     onChange={(e) => setEmpId(e.target.value)}
                     placeholder="e.g. EMP-CTRL-001"
-                    className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-[#000085] focus:ring-2 focus:ring-[#000085]/20 font-mono transition-all"
+                    className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-[#000075] focus:ring-2 focus:ring-[#000075]/20 font-mono transition-all"
                   />
                   <span className="text-[11px] text-slate-500 mt-1 block">
                     Designated: <strong className="text-slate-800">{activeRole.officer}</strong> ({activeRole.designation})
@@ -459,7 +586,7 @@ export default function LoginPage() {
                     value={pass}
                     onChange={(e) => setPass(e.target.value)}
                     placeholder="Enter password"
-                    className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-[#000085] focus:ring-2 focus:ring-[#000085]/20 transition-all"
+                    className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-[#000075] focus:ring-2 focus:ring-[#000075]/20 transition-all"
                   />
                   <span className="text-[11px] text-slate-500 mt-1 block">
                     Demo password: <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">{activeRole.defaultPass}</code>
@@ -512,7 +639,7 @@ export default function LoginPage() {
 
             {/* Other Demo Profiles */}
             <div className="mt-6 pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-              <span>Also available:</span>
+              <span className="font-medium text-slate-600">Executive Demo Credentials:</span>
               <div className="flex flex-wrap gap-2">
                 {DEMO_CREDENTIALS.filter((c) => ["ADMIN001", "DRM001", "OBS001"].includes(c.employeeId)).map((c) => (
                   <button
@@ -523,7 +650,7 @@ export default function LoginPage() {
                       setPass(c.password);
                       setError(null);
                     }}
-                    className="text-[11px] px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 cursor-pointer"
+                    className="text-[11px] px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 cursor-pointer font-medium transition-colors"
                   >
                     {c.employeeId} ({c.name})
                   </button>

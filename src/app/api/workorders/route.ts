@@ -25,26 +25,62 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const lineId = body.lineId || body.trackId || "UP_FAST";
 
-    const track = await prisma.track.findFirst({
-      where: { trackId: body.trackId ?? "UP" },
+    // Locate track matching lineId or fallback
+    let track = await prisma.track.findFirst({
+      where: { trackId: lineId },
     });
     if (!track) {
-      return NextResponse.json({ error: "Track not found" }, { status: 400 });
+      track = await prisma.track.findFirst({
+        where: { trackId: { in: ["UP_FAST", "UP"] } },
+      });
     }
+    if (!track) {
+      return NextResponse.json({ error: "Track line not found" }, { status: 400 });
+    }
+
+    const kmFrom = parseFloat(body.kmFrom);
+    const kmTo = parseFloat(body.kmTo);
+    const durationMinutes = parseInt(body.durationMinutes) || 60;
+    const priority = parseInt(body.priority ?? 2);
+
+    // Calculate nearest depot if not provided
+    const depotKm = kmFrom <= 45 ? 0.0 : kmFrom <= 140 ? 90.0 : kmFrom <= 250 ? 197.0 : 312.0;
+    const depotName = kmFrom <= 45 ? "New Delhi Yard Depot (KM 0.0)" :
+      kmFrom <= 140 ? "Panipat Jn Depot (KM 90.0)" :
+      kmFrom <= 250 ? "Ambala Cantt Depot (KM 197.0)" : "Ludhiana Jn Yard (KM 312.0)";
+    const dist = Math.abs(kmFrom - depotKm);
+    const transitMin = body.transitMinutes ? parseInt(body.transitMinutes) : (dist <= 2.0 ? 5 : Math.round((dist / 30.0) * 60));
+
+    const isEmergency = priority === 1 || (body.defectType && ["RAIL_FRACTURE", "POINT_MACHINE_FAILURE"].includes(body.defectType));
+    const assetRisk = body.assetRisk ? parseFloat(body.assetRisk) : (isEmergency ? 95.0 : priority === 2 ? 70.0 : 25.0);
 
     const wo = await prisma.workOrder.create({
       data: {
         department:       body.department,
         description:      body.description,
-        kmFrom:           parseFloat(body.kmFrom),
-        kmTo:             parseFloat(body.kmTo),
-        durationMinutes:  parseInt(body.durationMinutes),
-        priority:         parseInt(body.priority ?? 2),
+        kmFrom:           kmFrom,
+        kmTo:             kmTo,
+        durationMinutes:  durationMinutes,
+        priority:         priority,
         overdueDays:      parseInt(body.overdueDays ?? 0),
-        cumulativeGmt:    parseFloat(body.cumulativeGmt ?? 0),
+        cumulativeGmt:    parseFloat(body.cumulativeGmt ?? 120),
         tqiScore:         parseFloat(body.tqiScore ?? 70),
         trackId:          track.id,
+        lineId:           lineId,
+        kpMarker:         body.kpMarker || `KM ${kmFrom.toFixed(1)} / ${Math.floor(kmFrom * 2)}-${Math.floor(kmFrom * 2) + 2}`,
+        defectType:       body.defectType || "MAINTENANCE_DEMAND",
+        ssrTaskCode:      body.ssrTaskCode || null,
+        ssrStandardMin:   body.ssrStandardMin ? parseInt(body.ssrStandardMin) : durationMinutes,
+        aiAdjustedMin:    body.aiAdjustedMin ? parseInt(body.aiAdjustedMin) : durationMinutes + transitMin,
+        nearestDepot:     body.nearestDepot || depotName,
+        transitMinutes:   transitMin,
+        hardSafetyOverride: body.hardSafetyOverride ?? (assetRisk >= 90.0),
+        horizonType:      body.horizonType || (assetRisk >= 70.0 ? "WEEKLY" : "MONTHLY"),
+        explanation:      body.explanation || `Requisition from ${body.department} on ${lineId} line.`,
+        assetRisk:        assetRisk,
+        penaltyWeight:    Math.round(100 + 99 * assetRisk),
         requestedDate:    new Date(body.requestedDate ?? Date.now()),
         provenance:       "LIVE",
         status:           "PENDING",

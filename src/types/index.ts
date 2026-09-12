@@ -59,6 +59,21 @@ export interface WorkOrder {
   isShadowBlock:    boolean;
   trackId:          string;
   provenance:       string;
+
+  // Multi-line and LRS Asset Address
+  lineId?:          string; // UP_FAST | DN_FAST | UP_SLOW | DN_SLOW
+  kpMarker?:        string | null; // e.g. "KM 14 / 12-14"
+  defectType?:      string | null;
+
+  // SSR & AI Duration Adjustments
+  ssrTaskCode?:     string | null;
+  ssrStandardMin?:  number | null;
+  aiAdjustedMin?:   number | null;
+  nearestDepot?:    string | null;
+  transitMinutes?:  number;
+  hardSafetyOverride?: boolean;
+  explanation?:     string | null;
+  horizonType?:     "WEEKLY" | "MONTHLY";
 }
 
 export interface ScheduledBlock {
@@ -78,6 +93,15 @@ export interface ScheduledBlock {
   justification?:  string; // Explainable AI (XAI) natural language reasoning
   trackId:         string;
   provenance:      string;
+
+  // Mathematical Balancing Scale Attributes
+  lineId?:         string;
+  slotOptionType?: "NATURAL_GAP" | "OFF_PEAK_BACKUP" | "PEAK_CLUBBED" | "HARD_SAFETY_OVERRIDE";
+  slotScore?:      number;
+  delayPenalty?:   number;
+  clubbingBonus?:  number;
+  setupSavedMin?:  number;
+  horizonType?:    "WEEKLY" | "MONTHLY";
 }
 
 export interface TrainPerturbation {
@@ -222,6 +246,35 @@ export interface SolverWorkOrder {
   cumulativeGmt:    number;
   tqiScore:         number;
   trackId:          string;
+  lineId?:          string;
+  defectType?:      string | null;
+  ssrTaskCode?:     string | null;
+  ssrStandardMin?:  number | null;
+  aiAdjustedMin?:   number | null;
+  nearestDepot?:    string | null;
+  transitMinutes?:  number;
+  hardSafetyOverride?: boolean;
+  horizonType?:     "WEEKLY" | "MONTHLY";
+}
+
+export interface SSRTaskDefinition {
+  taskCode:         string;
+  department:       "TMS" | "SMMS" | "TDMS";
+  taskName:         string;
+  standardMinutes:  number;
+  defaultSeverity:  "Critical" | "Major" | "Minor";
+  description:      string;
+}
+
+export interface SlotOptionEvaluation {
+  optionName:       string;
+  timeWindow:       string;
+  trafficImpact:    string;
+  disruptionPenalty: number;
+  clubbingBonus:    number;
+  finalScore:       number;
+  decision:         "REJECTED" | "BACKUP" | "WINNER";
+  reason:           string;
 }
 
 export interface SolverPayload {
@@ -230,6 +283,7 @@ export interface SolverPayload {
   horizonMinutes:  number;
   date:            string;
   monsoonActive?:  boolean;
+  horizonType?:    "WEEKLY" | "MONTHLY";
 }
 
 export interface SolverResult {

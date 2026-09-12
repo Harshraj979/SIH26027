@@ -63,9 +63,9 @@ export default function GovHeader({ onLogout }: Props) {
 
   return (
     <header 
-      className="w-full shrink-0 text-white shadow-xl select-none overflow-hidden border-b border-black/40"
+      className="w-full shrink-0 text-white shadow-md select-none overflow-hidden border-b border-[#000095]"
       style={{
-        backgroundColor: "#000085",
+        backgroundColor: "#000075",
         backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.25) 100%)",
       }}
     >

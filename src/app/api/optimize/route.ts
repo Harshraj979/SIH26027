@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     const payload: SolverPayload = {
       date:           planDate,
       horizonMinutes: 1440,
+      horizonType:    (body.horizonType as "WEEKLY" | "MONTHLY") || undefined,
       trains: trains.map((t) => ({
         id:       t.id,
         number:   t.number,
@@ -73,6 +74,15 @@ export async function POST(req: NextRequest) {
         cumulativeGmt:    wo.cumulativeGmt,
         tqiScore:         wo.tqiScore,
         trackId:          wo.track.trackId,
+        lineId:           wo.lineId || wo.track.trackId,
+        defectType:       wo.defectType,
+        ssrTaskCode:      wo.ssrTaskCode,
+        ssrStandardMin:   wo.ssrStandardMin,
+        aiAdjustedMin:    wo.aiAdjustedMin,
+        nearestDepot:     wo.nearestDepot,
+        transitMinutes:   wo.transitMinutes,
+        hardSafetyOverride: wo.hardSafetyOverride,
+        horizonType:      (wo.horizonType as "WEEKLY" | "MONTHLY") || "WEEKLY",
       })),
     };
 
@@ -104,6 +114,13 @@ export async function POST(req: NextRequest) {
             status:           "APPROVED",
             planDate:         planDateTime,
             provenance:       "MODELED",
+            lineId:           block.lineId ?? "UP_FAST",
+            slotOptionType:   block.slotOptionType ?? "NATURAL_GAP",
+            slotScore:        block.slotScore ?? 0,
+            delayPenalty:     block.delayPenalty ?? 0,
+            clubbingBonus:    block.clubbingBonus ?? 0,
+            setupSavedMin:    block.setupSavedMin ?? 0,
+            horizonType:      block.horizonType ?? "WEEKLY",
             workOrder: {
               connect: { id: primaryWoId },
             },
@@ -113,7 +130,11 @@ export async function POST(req: NextRequest) {
         // Update all clustered WOs to SCHEDULED
         await prisma.workOrder.updateMany({
           where: { id: { in: block.clusterIds } },
-          data:  { status: "SCHEDULED", assetRisk: block.assetRisk, penaltyWeight: block.penaltyWeight },
+          data:  {
+            status: "SCHEDULED",
+            assetRisk: block.assetRisk,
+            penaltyWeight: block.penaltyWeight,
+          },
         });
       }
 
