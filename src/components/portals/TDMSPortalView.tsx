@@ -147,258 +147,313 @@ export default function TDMSPortalView({
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-rose-950 to-rose-900 text-white rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-5 text-slate-800">
+      
+      {/* ── 1. Header Banner ──────────────────────────────────────────────── */}
+      <div className="bg-gradient-to-r from-rose-950 via-red-950 to-rose-900 text-white rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-rose-900/80">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-2xl">⚡</span>
-            <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-800/80 text-rose-200 border border-rose-700">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-xl">⚡</span>
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-rose-800/70 text-rose-200 border border-rose-700/60">
               IR-RBAC • 25kV OHE Traction Portal
             </span>
+            <span className="text-[10px] text-rose-200/70 font-mono">
+              Role: SR_DEE_TRD
+            </span>
           </div>
-          <h2 className="text-xl font-black tracking-tight">
+          <h2 className="text-lg sm:text-xl font-black tracking-tight">
             Traction Distribution Management System (TDMS) • OHE Console
           </h2>
-          <p className="text-xs text-rose-100/80 mt-1 max-w-2xl">
-            Section Officer: <strong>Er. Mann Butani, DEE / TRD Traction (Delhi Division)</strong> • 25kV Catenary, Tower Wagons &amp; Power Block Clearances (PTW)
+          <p className="text-xs text-rose-100/80 mt-1 max-w-2xl font-medium">
+            Section Officer: <strong className="text-white">Er. Mann Butani, DEE / TRD Traction (Delhi Division)</strong> • 25kV Catenary, Tower Wagons &amp; Power Block Clearances (PTW)
           </p>
         </div>
 
-        <div className="bg-rose-900/50 border border-rose-400/40 text-rose-100 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs whitespace-nowrap self-start md:self-auto flex items-center gap-2">
+        <div className="bg-rose-900/60 border border-rose-400/40 text-rose-100 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs whitespace-nowrap self-start md:self-auto flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>TDMS Dedicated Console</span>
+          <span>TDMS Field Console Active</span>
         </div>
       </div>
 
       {submittedMessage && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center justify-between animate-in fade-in">
-          <span>✓ {submittedMessage}</span>
-          <button onClick={() => setSubmittedMessage(null)} className="text-emerald-700 font-bold">✕</button>
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center justify-between shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <span className="text-base">✓</span>
+            <span>{submittedMessage}</span>
+          </div>
+          <button onClick={() => setSubmittedMessage(null)} className="text-emerald-700 font-bold hover:text-emerald-900">✕</button>
         </div>
       )}
 
-      {/* Metrics Row */}
+      {/* ── 2. Metrics Row ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-[10.5px] uppercase font-bold text-slate-500">Active OHE Demands</p>
-          <p className="text-2xl font-black text-rose-900 mt-1">{tdmsOrders.length}</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">Traction Distribution Logs</p>
+        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
+          <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Active OHE Demands</p>
+          <p className="text-2xl font-black text-rose-900 mt-0.5">{tdmsOrders.length}</p>
+          <p className="text-[11px] text-slate-500 font-medium">Traction Distribution Logs</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-[10.5px] uppercase font-bold text-slate-500">Critical Flashovers</p>
-          <p className="text-2xl font-black text-rose-700 mt-1">{criticalCount}</p>
-          <p className="text-[11px] text-rose-600 font-medium mt-0.5">High Derailment/PTW Hazard</p>
+        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
+          <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Critical Flashovers</p>
+          <p className="text-2xl font-black text-rose-700 mt-0.5">{criticalCount}</p>
+          <p className="text-[11px] text-rose-600 font-medium">High Derailment/PTW Hazard</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-[10.5px] uppercase font-bold text-slate-500">Tower Wagons Active</p>
-          <p className="text-2xl font-black text-slate-800 mt-1">2 Units</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">RU-04 &amp; 8-Wheeler Wagon</p>
+        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
+          <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Tower Wagons Active</p>
+          <p className="text-2xl font-black text-slate-800 mt-0.5">2 Units</p>
+          <p className="text-[11px] text-slate-500 font-medium">RU-04 &amp; 8-Wheeler Wagon</p>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-[10.5px] uppercase font-bold text-slate-500">25kV Substation Status</p>
-          <p className="text-2xl font-black text-emerald-700 mt-1">All Energized</p>
-          <p className="text-[11px] text-emerald-700 font-medium mt-0.5">UMB, PNP, SIR Normal</p>
+        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
+          <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">25kV Substation Status</p>
+          <p className="text-2xl font-black text-emerald-700 mt-0.5">All Energized</p>
+          <p className="text-[11px] text-emerald-700 font-medium">UMB, PNP, SIR Normal</p>
         </div>
       </div>
 
-      {/* Interactive Logging Form */}
+      {/* ── 3. Ergonomic Two-Column Requisition Console ────────────────────── */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div className="px-5 py-3.5 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-              <span>⚡</span> Traction Requisition &amp; Power Block (PTW) Generator
+              <span>⚡</span> Traction Requisition &amp; Power Block (PTW) Console
             </h3>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Standardized insulator replacement, catenary tensioning, and mast anti-corrosion metrics
             </p>
           </div>
-          <span className="text-xs font-bold text-rose-800 bg-rose-100/60 px-2.5 py-1 rounded-full border border-rose-300">
+          <span className="text-xs font-bold text-rose-900 bg-rose-100/70 px-2.5 py-1 rounded-full border border-rose-300">
             TRD SSR Active
           </span>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Step 1: Select SSR Rate */}
-          <div>
-            <label className="block text-xs font-bold text-slate-800 mb-2">
-              1. Select Traction Maintenance Task (Indian Railways SSR Rates)
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {TDMS_SSR_OPTIONS.map((opt) => {
-                const isSel = selectedSSR.code === opt.code;
-                return (
-                  <button
-                    type="button"
-                    key={opt.code}
-                    onClick={() => setSelectedSSR(opt)}
-                    className={`text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                      isSel
-                        ? "bg-rose-50/80 border-rose-500 ring-2 ring-rose-500/20 shadow-xs"
-                        : "bg-slate-50/50 border-slate-200 hover:bg-slate-100/50"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-mono font-bold text-rose-800 bg-rose-100/80 px-1.5 py-0.2 rounded">
-                          {opt.code}
-                        </span>
-                        <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded ${
-                          opt.severity === "Critical" ? "bg-rose-100 text-rose-800" :
-                          opt.severity === "Major" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"
-                        }`}>
-                          {opt.severity}
-                        </span>
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* ── LEFT COLUMN: Traction Task Catalog (5 Cols) ──────────────── */}
+            <div className="lg:col-span-5 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  1. Standard Maintenance Task (SSR)
+                </label>
+                <span className="text-[10.5px] text-slate-500 font-medium">6 IR Standards</span>
+              </div>
+
+              {/* Compact Task List */}
+              <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                {TDMS_SSR_OPTIONS.map((opt) => {
+                  const isSel = selectedSSR.code === opt.code;
+                  return (
+                    <div
+                      key={opt.code}
+                      onClick={() => setSelectedSSR(opt)}
+                      className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                        isSel
+                          ? "bg-rose-50/90 border-rose-500 ring-2 ring-rose-500/20 shadow-xs"
+                          : "bg-slate-50/60 border-slate-200 hover:bg-slate-100/60"
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-[10px] font-mono font-bold text-rose-900 bg-rose-100 px-1.5 py-0.2 rounded">
+                            {opt.code}
+                          </span>
+                          <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded ${
+                            opt.severity === "Critical" ? "bg-rose-100 text-rose-800" :
+                            opt.severity === "Major" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"
+                          }`}>
+                            {opt.severity}
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-900 truncate">{opt.name}</p>
                       </div>
-                      <p className="text-xs font-bold text-slate-900 leading-tight">{opt.name}</p>
-                      <p className="text-[10.5px] text-slate-500 mt-1 line-clamp-2">{opt.desc}</p>
+                      <div className="text-right shrink-0">
+                        <span className="text-xs font-black text-[#000075] tabular-nums">{opt.standardMinutes}m</span>
+                        <span className="block text-[9px] text-slate-500 font-medium">Standard</span>
+                      </div>
                     </div>
-                    <div className="mt-2 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-semibold text-slate-700">
-                      <span>Standard SSR Duration:</span>
-                      <span className="font-bold text-[#000075]">{opt.standardMinutes} min</span>
-                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Selected Task Specification Card */}
+              <div className="p-3 bg-rose-50/40 rounded-xl border border-rose-200/80 text-xs space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-rose-900">Task Scope Spec:</span>
+                  <span className="text-[10px] font-mono font-bold text-rose-800">{selectedSSR.code}</span>
+                </div>
+                <p className="text-[11px] text-slate-700 font-medium leading-relaxed">{selectedSSR.desc}</p>
+                <div className="pt-1.5 border-t border-rose-200/60 flex items-center justify-between text-[10.5px] text-slate-600 font-semibold">
+                  <span>Standard Duration: <strong className="text-[#000075]">{selectedSSR.standardMinutes} min</strong></span>
+                  <span>Default Priority: <strong className="text-slate-800">P{selectedSSR.defaultPrio}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            {/* ── RIGHT COLUMN: Location, Parameters & AI Dispatch (7 Cols) ─── */}
+            <div className="lg:col-span-7 flex flex-col gap-4">
+              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                2. Location &amp; Power Block Parameters
+              </label>
+
+              {/* Section & Line Selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Railway Section (LRS Span)
+                  </label>
+                  <select
+                    value={selectedSection.id}
+                    onChange={(e) => {
+                      const s = SECTIONS.find((x) => x.id === e.target.value);
+                      if (s) setSelectedSection(s);
+                    }}
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  >
+                    {SECTIONS.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.id} — {s.name} ({s.kmStart}–{s.kmEnd} km)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Track Identification
+                  </label>
+                  <select
+                    value={lineId}
+                    onChange={(e) => setLineId(e.target.value)}
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  >
+                    <option value="UP_FAST">UP_FAST (Main Express Track - 160 km/h)</option>
+                    <option value="DN_FAST">DN_FAST (Main Express Track - 160 km/h)</option>
+                    <option value="UP_SLOW">UP_SLOW (Commuter &amp; Freight - 110 km/h)</option>
+                    <option value="DN_SLOW">DN_SLOW (Commuter &amp; Freight - 110 km/h)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Chainage KM & Traction Mast Marker */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Chainage KM
+                  </label>
+                  <input
+                    type="text"
+                    value={kmMarker}
+                    onChange={(e) => setKmMarker(e.target.value)}
+                    placeholder="e.g. 14.4"
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Traction Mast Marker
+                  </label>
+                  <input
+                    type="text"
+                    value={mastMarker}
+                    onChange={(e) => setMastMarker(e.target.value)}
+                    placeholder="e.g. 16-18"
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+              </div>
+
+              {/* Description, Days Overdue & Power Block Sector */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                <div className="sm:col-span-5">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    OHE Catenary Description
+                  </label>
+                  <input
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Provide OHE defect notes..."
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-5">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Power Block (PTW) Sector
+                  </label>
+                  <input
+                    type="text"
+                    value={ptwSector}
+                    onChange={(e) => setPtwSector(e.target.value)}
+                    placeholder="e.g. OHE-TSS-PNP (Substation Feeder)"
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Overdue
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={overdueDays}
+                    onChange={(e) => setOverdueDays(e.target.value)}
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+              </div>
+
+              {/* Live AI Sizing & Dispatch Card */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-r from-slate-50 via-rose-50/30 to-rose-50/60 border border-rose-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
+                    <span className="font-bold text-slate-900 text-xs">TRD Dynamic AI Sizing:</span>
+                    <span className="text-[11px] text-slate-600">
+                      Nearest Base: <strong>{depotName.split("(")[0]}</strong> (+{transitMin}m tower wagon transit)
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    Window Required: <strong>{selectedSSR.standardMinutes}m</strong> SSR + <strong>{transitMin}m</strong> transit = <strong className="text-[#000075]">{selectedSSR.standardMinutes + transitMin} min</strong>
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                  <div className="text-right">
+                    <p className="text-[9.5px] uppercase font-bold text-slate-500">ML Risk Score</p>
+                    <p className={`text-base font-black ${previewRisk >= 85 ? "text-rose-700" : previewRisk >= 50 ? "text-amber-700" : "text-emerald-700"}`}>
+                      {previewRisk.toFixed(1)} / 100
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-[#000075] hover:bg-blue-900 active:bg-blue-950 text-white text-xs font-bold rounded-lg shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    Forward to COA &rarr;
                   </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Location & Multi-Track */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                2. Railway Section
-              </label>
-              <select
-                value={selectedSection.id}
-                onChange={(e) => {
-                  const s = SECTIONS.find((x) => x.id === e.target.value);
-                  if (s) setSelectedSection(s);
-                }}
-                className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-800"
-              >
-                {SECTIONS.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.id} — {s.name} ({s.kmStart}–{s.kmEnd} km)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                Line Identification
-              </label>
-              <select
-                value={lineId}
-                onChange={(e) => setLineId(e.target.value)}
-                className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-800"
-              >
-                <option value="UP_FAST">UP_FAST (Main Express Track - 160 km/h)</option>
-                <option value="DN_FAST">DN_FAST (Main Express Track - 160 km/h)</option>
-                <option value="UP_SLOW">UP_SLOW (Commuter &amp; Freight - 110 km/h)</option>
-                <option value="DN_SLOW">DN_SLOW (Commuter &amp; Freight - 110 km/h)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                Kilometer &amp; Traction Mast Marker
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={kmMarker}
-                  onChange={(e) => setKmMarker(e.target.value)}
-                  placeholder="KM (e.g. 14.4)"
-                  className="w-1/2 text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-800"
-                />
-                <input
-                  type="text"
-                  value={mastMarker}
-                  onChange={(e) => setMastMarker(e.target.value)}
-                  placeholder="Mast (e.g. 16-18)"
-                  className="w-1/2 text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-800"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Description & Power Block Isolation */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                OHE Catenary Condition &amp; Defect Description
-              </label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-800"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                Power Block (PTW) Sector
-              </label>
-              <input
-                type="text"
-                value={ptwSector}
-                onChange={(e) => setPtwSector(e.target.value)}
-                className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-800"
-              />
-            </div>
-          </div>
-
-          {/* Live Preview Box */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-slate-50 to-rose-50/40 border border-rose-200 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
-            <div className="space-y-1">
-              <p className="font-bold text-slate-900">
-                TRD AI Pipeline Live Preview:
-              </p>
-              <p className="text-slate-600">
-                Nearest Base: <strong>{depotName}</strong> ({dist.toFixed(1)} km away $\rightarrow$ +{transitMin} min tower wagon transit)
-              </p>
-              <p className="text-slate-600">
-                Standard Time: <strong>{selectedSSR.standardMinutes} min</strong> • Priority Classification: {isRoutine ? "Routine Maintenance (Monthly)" : "Urgent Corridor Work (Weekly)"}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-[10px] uppercase font-bold text-slate-500">Calculated Priority Score</p>
-                <p className={`text-xl font-black ${previewRisk >= 85 ? "text-rose-700" : previewRisk >= 50 ? "text-amber-700" : "text-emerald-700"}`}>
-                  {previewRisk.toFixed(1)} / 100
-                </p>
-                {isRoutine ? (
-                  <span className="text-[9px] font-bold uppercase text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded">
-                    Routine Low Priority
-                  </span>
-                ) : (
-                  <span className="text-[9px] font-bold uppercase text-rose-700 bg-rose-100 px-1.5 py-0.2 rounded">
-                    High Operational Priority
-                  </span>
-                )}
+                </div>
               </div>
 
-              <button
-                type="submit"
-                className="px-5 py-3 bg-[#000075] hover:bg-[#00005a] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer whitespace-nowrap"
-              >
-                Forward to Central COA Pipeline &rarr;
-              </button>
             </div>
+
           </div>
         </form>
       </div>
 
-      {/* Active TDMS Demands */}
+      {/* ── 4. Active TDMS Work Orders Table ─────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-            Registered Traction &amp; OHE Demands ({tdmsOrders.length})
-          </h3>
-          <span className="text-[11px] text-slate-500">Synchronized with Central COA Repository</span>
+        <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+              Registered Traction &amp; OHE Demands ({tdmsOrders.length})
+            </h3>
+            <span className="text-[10.5px] text-slate-500">• Northern Railway (Delhi Division)</span>
+          </div>
+          <span className="text-[11px] text-rose-800 font-semibold bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
+            Synchronized with Central COA
+          </span>
         </div>
 
         <div className="overflow-x-auto">
@@ -410,50 +465,59 @@ export default function TDMSPortalView({
                 <th className="py-2.5 px-4">LRS Mast Marker</th>
                 <th className="py-2.5 px-4">Standard Rate</th>
                 <th className="py-2.5 px-4">Priority Score</th>
-                <th className="py-2.5 px-4">COA Scheduling Status</th>
+                <th className="py-2.5 px-4">COA Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {tdmsOrders.slice(0, 15).map((wo) => (
-                <tr key={wo.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-3 px-4 font-mono font-bold text-[#000075]">
-                    {wo.id}
-                    <span className="block text-[10px] text-slate-400 font-normal">{wo.ssrTaskCode ?? "TDMS-SSR-01"}</span>
-                  </td>
-                  <td className="py-3 px-4 font-semibold text-slate-800 max-w-xs truncate">
-                    {wo.description}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 font-mono text-[11px]">
-                    <span className="font-bold text-slate-800">{wo.lineId ?? "UP_FAST"}</span>
-                    <span className="block text-[10px] text-slate-400">{wo.kpMarker ?? `KM ${wo.kmFrom.toFixed(1)}`}</span>
-                  </td>
-                  <td className="py-3 px-4 tabular-nums font-semibold text-slate-700">
-                    {wo.durationMinutes} min
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`text-xs font-black tabular-nums px-2 py-0.5 rounded border ${
-                      (wo.assetRisk ?? 0) >= 80
-                        ? "bg-rose-100 text-rose-800 border-rose-300"
-                        : (wo.assetRisk ?? 0) >= 50
-                        ? "bg-amber-100 text-amber-800 border-amber-300"
-                        : "bg-emerald-100 text-emerald-800 border-emerald-300"
-                    }`}>
-                      {(wo.assetRisk ?? 50).toFixed(1)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                      wo.status === "SCHEDULED" ? "bg-emerald-50 text-emerald-800 border-emerald-300" : "bg-slate-100 text-slate-700 border-slate-200"
-                    }`}>
-                      {wo.status === "SCHEDULED" ? "✓ Scheduled in COA" : "⏳ Pending COA Solve"}
-                    </span>
+              {tdmsOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                    No active 25kV Traction demands registered. Log a requisition above.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                tdmsOrders.slice(0, 15).map((wo) => (
+                  <tr key={wo.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-4 font-mono font-bold text-[#000075]">
+                      {wo.id}
+                      <span className="block text-[10px] text-slate-400 font-normal">{wo.ssrTaskCode ?? "TDMS-SSR-01"}</span>
+                    </td>
+                    <td className="py-2.5 px-4 font-semibold text-slate-800 max-w-xs truncate">
+                      {wo.description}
+                    </td>
+                    <td className="py-2.5 px-4 text-slate-600 font-mono text-[11px]">
+                      <span className="font-bold text-slate-800">{wo.lineId ?? "UP_FAST"}</span>
+                      <span className="block text-[10px] text-slate-400">{wo.kpMarker ?? `KM ${wo.kmFrom.toFixed(1)}`}</span>
+                    </td>
+                    <td className="py-2.5 px-4 tabular-nums font-semibold text-slate-700">
+                      {wo.durationMinutes} min
+                    </td>
+                    <td className="py-2.5 px-4">
+                      <span className={`text-xs font-black tabular-nums px-2 py-0.5 rounded border ${
+                        (wo.assetRisk ?? 0) >= 80
+                          ? "bg-rose-100 text-rose-800 border-rose-300"
+                          : (wo.assetRisk ?? 0) >= 50
+                          ? "bg-amber-100 text-amber-800 border-amber-300"
+                          : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                      }`}>
+                        {(wo.assetRisk ?? 50).toFixed(1)}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-4">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                        wo.status === "SCHEDULED" ? "bg-emerald-50 text-emerald-800 border-emerald-300" : "bg-slate-100 text-slate-700 border-slate-200"
+                      }`}>
+                        {wo.status === "SCHEDULED" ? "✓ Scheduled in COA" : "⏳ Pending COA Solve"}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
     </div>
   );
 }

@@ -41,7 +41,7 @@ import type {
 import { ROLE_PERMISSIONS } from "@/types/auth";
 
 type Horizon = "WEEKLY" | "MONTHLY";
-type CoaTab = "schedule" | "spatial" | "beforeAfter" | "impact" | "pipeline";
+type CoaTab = "schedule" | "decisionLab" | "spatial" | "beforeAfter" | "impact" | "pipeline";
 type PortalType = "COA" | "TMS" | "SMMS" | "TDMS";
 
 const HORIZON_LABELS: Record<Horizon, { title: string; subtitle: string }> = {
@@ -497,8 +497,8 @@ function MainApp() {
             </div>
           </div>
 
-          {/* 5 Integrated Tabs Navigation */}
-          <div className="bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center gap-2 shrink-0 overflow-x-auto">
+          {/* 6 Integrated Tabs Navigation */}
+          <div className="bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center gap-1 shrink-0 overflow-x-auto">
             <button
               onClick={() => setCoaTab("schedule")}
               className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
@@ -510,6 +510,20 @@ function MainApp() {
               <span>🚆 Approved Corridor Schedule</span>
               <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 text-[#000075]">
                 {scheduledBlocks.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setCoaTab("decisionLab")}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                coaTab === "decisionLab"
+                  ? "text-[#000075] border-[#ffba00]"
+                  : "text-slate-500 border-transparent hover:text-slate-800"
+              }`}
+            >
+              <span>⚖️ Decision Lab &amp; Disruption Sim</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-800">
+                Live
               </span>
             </button>
 
@@ -535,7 +549,7 @@ function MainApp() {
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>⚖️ Before vs. After (Manual vs. AI)</span>
+              <span>🔄 Before vs. After (Manual vs. AI)</span>
               <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-800">
                 Diff
               </span>
@@ -570,23 +584,29 @@ function MainApp() {
             </button>
           </div>
 
-          {/* Tab 1: Approved Corridor Schedule & Balancing Scale */}
+          {/* Tab 1: Clean Approved Corridor Schedule Registry */}
           {coaTab === "schedule" && (
-            <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-4">
+            <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-3.5">
               
-              {/* ── Headline Live Disruption Simulator Trigger ─────────────── */}
-              <LiveDisruptionDemoWidget
-                onTriggerDisruption={handleTriggerDisruption}
-                isOptimizing={isOptimizing}
-              />
-
-              {/* ── Visual Mathematical Balancing Scale Widget ──────────────── */}
-              <div className="shrink-0">
-                <COABalancingScaleWidget scheduledBlocks={scheduledBlocks} />
+              {/* Quick Status Bar with Direct Shortcut to Decision Lab */}
+              <div className="bg-gradient-to-r from-blue-50 via-slate-50 to-indigo-50 border border-blue-200/70 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <span className="font-bold text-slate-800">
+                    Live Corridor Timetable: {scheduledBlocks.length} possessions scheduled conflict-free on NDLS–LDH (312 km).
+                  </span>
+                  <span className="hidden md:inline text-slate-500 font-medium">• 100% P1 Trains (Vande Bharat &amp; Shatabdi) Protected at 0 min delay</span>
+                </div>
+                <button
+                  onClick={() => setCoaTab("decisionLab")}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-indigo-300 text-[#000075] hover:bg-indigo-50 font-bold transition-all shadow-2xs cursor-pointer text-xs"
+                >
+                  <span>⚖️ Disruption Simulator &amp; Scale &rarr;</span>
+                </button>
               </div>
 
-              {/* ── Clean Scheduled Blocks Registry ─────────────────────────── */}
-              <div className="flex-1 min-h-[450px]">
+              {/* Scheduled Blocks Registry */}
+              <div className="flex-1 min-h-[500px]">
                 <BlockScheduleRegistry
                   scheduledBlocks={scheduledBlocks}
                   stations={stations}
@@ -599,7 +619,23 @@ function MainApp() {
             </div>
           )}
 
-          {/* Tab 2: Spatial Corridor Map View (312 km Schematic) */}
+          {/* Tab 2: Decision Lab — Balancing Scale & Disruption Simulator */}
+          {coaTab === "decisionLab" && (
+            <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-4">
+              {/* Headline Live Disruption Simulator */}
+              <LiveDisruptionDemoWidget
+                onTriggerDisruption={handleTriggerDisruption}
+                isOptimizing={isOptimizing}
+              />
+
+              {/* Visual Mathematical Balancing Scale Widget */}
+              <div className="shrink-0">
+                <COABalancingScaleWidget scheduledBlocks={scheduledBlocks} />
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Spatial Corridor Map View (312 km Schematic) */}
           {coaTab === "spatial" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-4">
               <CorridorSchematicMap
@@ -613,7 +649,7 @@ function MainApp() {
             </div>
           )}
 
-          {/* Tab 3: Before vs After Comparison */}
+          {/* Tab 4: Before vs After Comparison */}
           {coaTab === "beforeAfter" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5">
               <BeforeAfterComparison
@@ -624,14 +660,14 @@ function MainApp() {
             </div>
           )}
 
-          {/* Tab 4: Division & Pan-India Scale Impact */}
+          {/* Tab 5: Division & Pan-India Scale Impact */}
           {coaTab === "impact" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5">
               <ImpactScaleProjection />
             </div>
           )}
 
-          {/* Tab 5: Unified Defect Pipeline */}
+          {/* Tab 6: Unified Defect Pipeline */}
           {coaTab === "pipeline" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5">
               <WorkOrderPanel
