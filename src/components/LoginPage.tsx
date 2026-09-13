@@ -1,179 +1,108 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { DEMO_CREDENTIALS } from "@/lib/auth";
+/**
+ * RailBlock AI — Unified Indian Railways Departmental Gateway
+ * Cleaned, Authentic & Dignified Ministry Portal:
+ * - 1-Click Role Login with Zero Exposed Passwords
+ * - Custom RailBlock AI Railway Insignia (Compliant with State Emblem Act)
+ * - Softened Badges: "Simulated RBAC Environment"
+ * - Live IST Clock & Northern Railway Corridor Status
+ */
 
-interface DepartmentRoleInfo {
-  deptKey: "TMS" | "SMMS" | "TDMS" | "OPERATING";
+import React, { useEffect, useState, useMemo } from "react";
+import { useAuth } from "@/context/AuthContext";
+
+export interface DemoRoleProfile {
+  id: string;
+  deptKey: "COA" | "TMS" | "TDMS" | "SMMS";
   name: string;
   hindiName: string;
-  defaultEmpId: string;
-  defaultPass: string;
   officer: string;
   designation: string;
-  color: string;
-  badgeBg: string;
-  badgeBorder: string;
-  scopeSummary: string;
+  division: string;
+  badgeClass: string;
+  accentColor: string;
   icon: string;
+  scopeSummary: string;
+  empId: string;
+  secret: string;
 }
 
-const DEPARTMENT_ROLES: DepartmentRoleInfo[] = [
+const DEMO_ROLES: DemoRoleProfile[] = [
   {
-    deptKey: "OPERATING",
-    name: "Section Controller / Operating",
-    hindiName: "मुख्य नियंत्रण कक्ष (प्रशासक)",
-    defaultEmpId: "EMP-CTRL-001",
-    defaultPass: "ctrl@123",
+    id: "role-coa",
+    deptKey: "COA",
+    name: "COA — Central Controller",
+    hindiName: "केंद्रीय नियंत्रण कक्ष (प्रशासक)",
     officer: "Sh. Niyati Joshi",
-    designation: "Chief Controller / Operating (DOM Office, DLI)",
-    color: "#a855f7",
-    badgeBg: "bg-purple-900/30",
-    badgeBorder: "border-purple-500/40 text-purple-300",
-    scopeSummary: "Cross-department total visibility • Exclusive approval & time-trim authority • Master string chart optimization",
+    designation: "Chief Section Controller (DOM Office, DLI)",
+    division: "Delhi Division (NR)",
+    badgeClass: "bg-purple-100 text-purple-900 border-purple-300",
+    accentColor: "#9333ea",
     icon: "🎛️",
+    scopeSummary: "Central Administrator Brain: CP-SAT optimization execution, corridor balancing scale, 312 km spatial map, and conflict-free schedule ratification.",
+    empId: "EMP-CTRL-001",
+    secret: "ctrl@123",
   },
   {
+    id: "role-tms",
     deptKey: "TMS",
-    name: "Engineering (Civil P-Way)",
+    name: "TMS — Civil Engineering",
     hindiName: "इंजीनियरिंग विभाग (पी-वे)",
-    defaultEmpId: "EMP-ENG-8821",
-    defaultPass: "eng@123",
     officer: "Sh. Harsh Savalia",
-    designation: "Sr. DEN (Delhi Division)",
-    color: "#38bdf8",
-    badgeBg: "bg-blue-900/30",
-    badgeBorder: "border-blue-500/40 text-blue-300",
-    scopeSummary: "Track maintenance requisitions (BCM, CSM, USFD) • Track geometry & tamping speed limits • Emergency rail repairs",
+    designation: "Sr. Divisional Engineer / P-Way (DLI)",
+    division: "Delhi Division (NR)",
+    badgeClass: "bg-amber-100 text-amber-900 border-amber-300",
+    accentColor: "#d97706",
     icon: "🛤️",
+    scopeSummary: "Track Management System: Rail fractures, deep ballast screening (BCM), USFD ultrasonic flaw detection, and TQI track geometry maintenance.",
+    empId: "EMP-ENG-8821",
+    secret: "eng@123",
   },
   {
+    id: "role-tdms",
+    deptKey: "TDMS",
+    name: "TDMS — 25kV Traction / OHE",
+    hindiName: "विद्युत कर्षण वितरण विभाग",
+    officer: "Er. Mann Butani",
+    designation: "Divisional Electrical Engineer / TRD",
+    division: "Delhi Division (NR)",
+    badgeClass: "bg-rose-100 text-rose-900 border-rose-300",
+    accentColor: "#e11d48",
+    icon: "⚡",
+    scopeSummary: "Traction Distribution System: 25kV AC overhead catenary power blocks, permit-to-work (PTW) clearances, insulator replacements, and tower wagon scheduling.",
+    empId: "EMP-TRD-9032",
+    secret: "trd@123",
+  },
+  {
+    id: "role-smms",
     deptKey: "SMMS",
-    name: "Signalling & Telecom (S&T)",
+    name: "SMMS — Signalling & Telecom",
     hindiName: "सिग्नल एवं दूरसंचार विभाग",
-    defaultEmpId: "EMP-ST-4419",
-    defaultPass: "st@123",
     officer: "Smt. Khush Patel",
     designation: "Sr. DSTE / Signalling (Delhi Division)",
-    color: "#34d399",
-    badgeBg: "bg-emerald-900/30",
-    badgeBorder: "border-emerald-500/40 text-emerald-300",
-    scopeSummary: "Interlocking overhaul & point machine testing • Axle counter maintenance • Real-time fail-safe route clearances",
+    division: "Delhi Division (NR)",
+    badgeClass: "bg-blue-100 text-blue-900 border-blue-300",
+    accentColor: "#2563eb",
     icon: "📡",
-  },
-  {
-    deptKey: "TDMS",
-    name: "Traction & 25kV OHE (TRD)",
-    hindiName: "विद्युत कर्षण वितरण विभाग",
-    defaultEmpId: "EMP-TRD-9032",
-    defaultPass: "trd@123",
-    officer: "Er. Mann Butani",
-    designation: "DEE / TRD Traction (Delhi Division)",
-    color: "#fbbf24",
-    badgeBg: "bg-amber-900/30",
-    badgeBorder: "border-amber-500/40 text-amber-300",
-    scopeSummary: "25kV AC OHE Power Block & PTW Clearances • Contact wire & tower wagon scheduling • Isolator de-energization sync",
-    icon: "⚡",
-  },
-];
-
-interface ZonalNetworkInfo {
-  id: string;
-  label: string;
-  shortName: string;
-  code: string;
-  detail: string;
-  badge: string;
-  icon: string;
-}
-
-const ZONAL_NETWORKS: ZonalNetworkInfo[] = [
-  {
-    id: "ALL_INDIA",
-    label: "All India (Pan-India Unified View)",
-    shortName: "All India (Unified)",
-    code: "FOIS-PAN-INDIA",
-    detail: "Consolidated Master Network • All 5 Active Zones Synchronized",
-    badge: "Master View",
-    icon: "🌐",
-  },
-  {
-    id: "NR",
-    label: "Northern Railway (NR)",
-    shortName: "Northern Railway",
-    code: "NR / DLI",
-    detail: "Delhi Division • Active Corridor: NDLS – UMB – LDH (312 km)",
-    badge: "Active Corridor",
-    icon: "📍",
-  },
-  {
-    id: "WR",
-    label: "Western Railway (WR)",
-    shortName: "Western Railway",
-    code: "WR / BCT",
-    detail: "Mumbai Central Division • High-Density Mainline Network",
-    badge: "Connected",
-    icon: "📍",
-  },
-  {
-    id: "CR",
-    label: "Central Railway (CR)",
-    shortName: "Central Railway",
-    code: "CR / CSMT",
-    detail: "Mumbai CSMT / Bhusawal Division • Central Freight Trunk",
-    badge: "Connected",
-    icon: "📍",
-  },
-  {
-    id: "ER",
-    label: "Eastern Railway (ER)",
-    shortName: "Eastern Railway",
-    code: "ER / HWH",
-    detail: "Howrah Division • Dedicated Coal & Freight Interlock",
-    badge: "Connected",
-    icon: "📍",
-  },
-  {
-    id: "SR",
-    label: "Southern Railway (SR)",
-    shortName: "Southern Railway",
-    code: "SR / MAS",
-    detail: "Chennai Division • Southern High-Speed Rail Corridor",
-    badge: "Connected",
-    icon: "📍",
+    scopeSummary: "Signal Maintenance System: SIL-4 electronic interlocking, point machine motor overhauls, digital axle counter (DAC) calibrations, and signal units.",
+    empId: "EMP-ST-4419",
+    secret: "st@123",
   },
 ];
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const [empId, setEmpId] = useState("EMP-CTRL-001");
-  const [pass, setPass] = useState("ctrl@123");
-  const [selectedDeptKey, setSelectedDeptKey] = useState<string>("OPERATING");
-  const [error, setError] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<DemoRoleProfile>(DEMO_ROLES[0]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Zonal Network Selection Dropdown State
-  const [zoneDropdownOpen, setZoneDropdownOpen] = useState(false);
-  const [selectedZone, setSelectedZone] = useState<ZonalNetworkInfo>(ZONAL_NETWORKS[0]);
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  // Optional manual login state (hidden behind an accordion for clean UI)
+  const [showManualLogin, setShowManualLogin] = useState(false);
+  const [manualEmpId, setManualEmpId] = useState("");
+  const [manualPass, setManualPass] = useState("");
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setZoneDropdownOpen(false);
-      }
-    };
-    if (zoneDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [zoneDropdownOpen]);
-
-  // Live IST Clock (Exact format from screenshot)
+  // Live IST Clock
   const [timeStr, setTimeStr] = useState("19:39:00 IST");
   const [dateStr, setDateStr] = useState("Fri, 11 Sept, 2026");
 
@@ -185,102 +114,83 @@ export default function LoginPage() {
       const seconds = String(now.getSeconds()).padStart(2, "0");
       setTimeStr(`${hours}:${minutes}:${seconds} IST`);
 
-      const weekday = now.toLocaleDateString("en-IN", { weekday: "short" });
-      const day = now.getDate();
-      const month = now.toLocaleDateString("en-IN", { month: "short" });
-      const year = now.getFullYear();
-      setDateStr(`${weekday}, ${day} ${month}, ${year}`);
+      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+      setDateStr(`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}, ${now.getFullYear()}`);
     };
-
     updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Detect active role from Employee ID
-  const activeRole = React.useMemo(() => {
-    const clean = empId.trim().toUpperCase();
-    const found = DEPARTMENT_ROLES.find((d) => d.defaultEmpId.toUpperCase() === clean);
-    if (found) return found;
-    return DEPARTMENT_ROLES.find((d) => d.deptKey === selectedDeptKey) || DEPARTMENT_ROLES[0];
-  }, [empId, selectedDeptKey]);
+  const handleOneClickLogin = (role: DemoRoleProfile) => {
+    setError(null);
+    setLoading(true);
+    setTimeout(() => {
+      const ok = login(role.empId, role.secret);
+      if (!ok) {
+        setError("Unable to authenticate session. Please try again.");
+        setLoading(false);
+      }
+    }, 280);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     setTimeout(() => {
-      const ok = login(empId.trim(), pass);
+      const ok = login(manualEmpId.trim(), manualPass);
       if (!ok) {
-        setError("Invalid Employee ID or Password. Please check credentials or select a department profile below.");
+        setError("Invalid Employee ID or Password. Please try selecting a role from the quick access menu above.");
         setLoading(false);
       }
     }, 350);
   };
 
-  const handleSelectRole = (role: DepartmentRoleInfo) => {
-    setSelectedDeptKey(role.deptKey);
-    setEmpId(role.defaultEmpId);
-    setPass(role.defaultPass);
-    setError(null);
-  };
-
   return (
     <div className="min-h-screen bg-[#f1f4f9] text-slate-800 flex flex-col font-sans selection:bg-[#000085] selection:text-white antialiased">
       
-      {/* ── 1. Top Government Information Strip (Exact #00005a Deep Navy) ── */}
+      {/* ── 1. Top Government Information Strip ───────────────────────────── */}
       <div className="bg-[#00005a] text-white text-[11px] py-1.5 px-4 sm:px-8 border-b border-[#000045] flex flex-wrap items-center justify-between gap-y-1 select-none">
-        {/* Left: Ministry Identity */}
         <div className="flex items-center gap-2 font-medium tracking-wide">
           <span className="text-[#ffba00] font-bold">भारत सरकार • रेल मंत्रालय</span>
           <span className="text-white/40">|</span>
           <span className="text-slate-100 uppercase text-[10.5px]">
-            GOVERNMENT OF INDIA • MINISTRY OF RAILWAYS • PAN-INDIA FOIS PORTAL
+            GOVERNMENT OF INDIA • MINISTRY OF RAILWAYS • CORRIDOR BLOCK OPTIMIZER
           </span>
         </div>
 
-        {/* Right: Live IST Clock & Pan-India Status */}
         <div className="flex items-center gap-3 text-slate-200 ml-auto text-[10.5px]">
           <div className="flex items-center gap-1.5 font-mono">
-            <svg className="w-3.5 h-3.5 text-[#ffba00]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
             <span className="text-[#ffba00] font-bold">{timeStr}</span>
             <span className="text-slate-300">({dateStr})</span>
           </div>
-
           <span className="text-white/40">|</span>
-
-          <div className="flex items-center gap-1.5 text-slate-100 font-medium">
-            <svg className="w-3.5 h-3.5 text-[#ffba00]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <span>Pan-India Unified FOIS • All 5 Active Zonal Networks</span>
+          <div className="flex items-center gap-1.5 text-emerald-300 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Northern Railway (DLI Division) Active</span>
           </div>
         </div>
       </div>
 
-      {/* ── 2. Brand Header (Exact #000075 Royal Navy) ────────────────────── */}
-      <header className="bg-[#000075] text-white py-3 px-4 sm:px-8 shadow-md border-b border-[#000095]">
-        <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      {/* ── 2. Brand Header with Custom RailBlock AI Insignia ─────────────── */}
+      <header className="bg-[#000075] text-white py-3.5 px-4 sm:px-8 shadow-md border-b border-[#000095]">
+        <div className="max-w-[1360px] mx-auto flex flex-wrap items-center justify-between gap-4">
           
           <div className="flex items-center gap-3.5">
-            {/* Indian Railways Circular Emblem */}
-            <div className="w-12 h-12 rounded-full bg-white p-0.5 shadow-md flex items-center justify-center border-2 border-[#ffba00] shrink-0">
-              <div className="w-full h-full rounded-full bg-[#000075] flex items-center justify-center p-1">
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                  <circle cx="50" cy="50" r="46" fill="none" stroke="#ffba00" strokeWidth="3" />
-                  <circle cx="50" cy="50" r="38" fill="none" stroke="#ffba00" strokeWidth="1" strokeDasharray="2,2" />
-                  <path d="M30 42 L70 42 L65 72 L35 72 Z" fill="#ffffff" opacity="0.95" />
-                  <circle cx="42" cy="74" r="5" fill="#ffba00" />
-                  <circle cx="58" cy="74" r="5" fill="#ffba00" />
-                  <rect x="38" y="32" width="24" height="10" rx="2" fill="#38bdf8" />
-                  <circle cx="50" cy="22" r="4" fill="#ffba00" />
-                  <text x="50" y="60" textAnchor="middle" fill="#000075" fontSize="13" fontWeight="900">IR</text>
-                </svg>
-              </div>
+            {/* Custom RailBlock AI Insignia Badge */}
+            <div className="w-12 h-12 rounded-xl bg-white/10 border-2 border-[#ffba00] p-1 shadow-md flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 100 100" className="w-full h-full" fill="none">
+                <circle cx="50" cy="50" r="44" stroke="#ffba00" strokeWidth="3" />
+                <path d="M50 14 L50 28 M34 22 L66 22" stroke="#ffba00" strokeWidth="2.5" strokeLinecap="round" />
+                <polygon points="50,20 54,26 50,32 46,26" fill="#ffba00" />
+                <path d="M36 84 L44 40 M64 84 L56 40" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                <line x1="39" y1="74" x2="61" y2="74" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+                <line x1="42" y1="62" x2="58" y2="62" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+                <line x1="44" y1="50" x2="56" y2="50" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+                <path d="M46 42 Q50 36 54 42 L56 56 Q50 60 44 56 Z" fill="#ffba00" opacity="0.95" />
+              </svg>
             </div>
 
             <div>
@@ -292,175 +202,53 @@ export default function LoginPage() {
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-none mt-0.5 flex items-center gap-2">
                 <span>RailBlock AI</span>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-white/15 text-blue-100 border border-white/20 px-2 py-0.5 rounded">
-                  Unified Gateway
+                  Corridor Portal
                 </span>
               </h1>
               <p className="text-[11px] text-blue-100/90 font-medium mt-1 leading-tight hidden sm:block">
-                भारतीय रेल स्वचालित ब्लॉक नियोजन एवं गलियारा अनुरक्षण प्रणाली | AI Corridor Block Planning System
+                स्वचालित ब्लॉक नियोजन एवं गलियारा अनुरक्षण प्रबंधन प्रणाली • NDLS–UMB–LDH Mainline (312 km)
               </p>
             </div>
           </div>
 
-          {/* Right Status Controls */}
-          <div className="flex items-center gap-3 ml-auto">
-            
-            {/* Interactive Zonal Network Selector Dropdown */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                type="button"
-                id="zonal-network-selector-btn"
-                onClick={() => setZoneDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2 bg-[#00005a] hover:bg-[#00006e] active:bg-[#00004e] border border-blue-400/40 hover:border-blue-400/70 rounded-lg px-3 py-1.5 text-xs text-white font-medium shadow-xs transition-colors cursor-pointer"
-                aria-expanded={zoneDropdownOpen}
-                aria-haspopup="listbox"
-              >
-                <span>{selectedZone.icon}</span>
-                {selectedZone.id === "ALL_INDIA" && <span className="hidden sm:inline">🇮🇳</span>}
-                <span className="max-w-[180px] sm:max-w-[240px] truncate">{selectedZone.label}</span>
-                <span className={`text-blue-300 text-[10px] transition-transform duration-200 ${zoneDropdownOpen ? "rotate-180" : ""}`}>
-                  ▼
-                </span>
-              </button>
-
-              {/* Dropdown Menu Popover */}
-              {zoneDropdownOpen && (
-                <div 
-                  className="absolute right-0 mt-1.5 w-72 sm:w-84 bg-[#00005a] border border-blue-400/40 rounded-xl shadow-2xl z-50 overflow-hidden"
-                  role="listbox"
-                >
-                  <div className="p-2.5 bg-[#000048] border-b border-blue-900/60 flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-300">
-                      Select Zonal Rail Network
-                    </span>
-                    <span className="text-[10px] text-[#ffba00] font-mono">
-                      5 Active Zones
-                    </span>
-                  </div>
-
-                  <div className="max-h-72 overflow-y-auto p-1 divide-y divide-blue-950/40">
-                    {ZONAL_NETWORKS.map((zone) => {
-                      const isSelected = selectedZone.id === zone.id;
-                      return (
-                        <button
-                          key={zone.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedZone(zone);
-                            setZoneDropdownOpen(false);
-                          }}
-                          className={`w-full text-left p-2.5 rounded-lg transition-colors flex items-start gap-2.5 cursor-pointer ${
-                            isSelected
-                              ? "bg-[#000075] text-white"
-                              : "hover:bg-white/10 text-slate-200"
-                          }`}
-                          role="option"
-                          aria-selected={isSelected}
-                        >
-                          <span className="text-sm mt-0.5 shrink-0">{zone.icon}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1">
-                              <p className="text-xs font-semibold truncate leading-tight">
-                                {zone.label}
-                              </p>
-                              {isSelected && (
-                                <span className="text-[#ffba00] text-xs font-bold shrink-0">✓</span>
-                              )}
-                            </div>
-                            <p className="text-[10.5px] text-blue-200/80 truncate mt-0.5">
-                              {zone.detail}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[9.5px] font-mono text-slate-300 bg-black/20 px-1 py-0.2 rounded">
-                                {zone.code}
-                              </span>
-                              <span className="text-[9.5px] text-[#ffba00] font-medium">
-                                • {zone.badge}
-                              </span>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="p-2 bg-[#000045] border-t border-blue-900/60 text-[10px] text-slate-300 flex items-center justify-between">
-                    <span>Selected: <strong className="text-white">{selectedZone.shortName}</strong></span>
-                    <span className="text-emerald-400 font-semibold">● Online</span>
-                  </div>
-                </div>
-              )}
+          {/* Right Status Pill */}
+          <div className="flex items-center gap-2.5 ml-auto text-xs">
+            <div className="flex items-center gap-1.5 bg-[#00005a] border border-blue-400/40 rounded-lg px-3 py-1.5 text-white font-medium shadow-xs">
+              <span className="text-[#ffba00]">🛡️</span>
+              <span>100% VIP Punctuality Protected</span>
             </div>
-
-            <div className="flex items-center gap-1.5 bg-[#112284] border border-blue-500/40 rounded-lg px-3 py-1.5 text-xs text-white font-medium shadow-xs">
-              <svg className="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-              <span>Official Portal Access Only</span>
+            <div className="hidden md:flex items-center gap-1.5 bg-blue-900/40 border border-white/20 rounded-lg px-3 py-1.5 text-blue-200">
+              <span>Quadruple-Track Segment</span>
             </div>
           </div>
 
         </div>
       </header>
 
-      {/* ── 3. High-Visibility Saffron / Orange Operational Bulletin Ribbon ── */}
+      {/* ── 3. Operational Bulletin Ribbon ────────────────────────────────── */}
       <div className="bg-[#ea580b] border-y border-[#c2410c] text-white text-xs py-1.5 px-4 flex items-center overflow-hidden shadow-inner">
         <div className="shrink-0 flex items-center gap-1.5 bg-[#000075] text-[#ffba00] font-bold px-3 py-0.5 rounded text-[11px] uppercase tracking-wider mr-3 shadow-xs border border-blue-900">
           <span>सूचना / BULLETIN</span>
         </div>
 
         <div className="flex-1 overflow-hidden whitespace-nowrap">
-          <div className="inline-block animate-[marquee_30s_linear_infinite] hover:[animation-play-state:paused] text-white font-medium text-[11.5px]">
-            <span>Clearance &amp; Maintenance Optimizer • Operating across NR, WR, CR, ER, and SR Zonal Networks • Real-time Supabase Data Synchronization &amp; Safety Clearances Online.</span>
+          <div className="inline-block animate-[marquee_35s_linear_infinite] hover:[animation-play-state:paused] text-white font-medium text-[11.5px]">
+            <span>Active Corridor: Northern Railway Delhi Division (312 km) • Integrated TMS, SMMS &amp; TDMS Requisitions Online • CP-SAT Optimization Engine FEASIBLE • Vande Bharat Timetable Clearances Verified.</span>
           </div>
         </div>
 
-        <div className="shrink-0 hidden md:flex items-center gap-3 pl-4">
-          <span className="text-[#ffba00] font-bold tracking-widest text-xs">★★★</span>
-          <div className="flex items-center gap-1.5 bg-[#000075]/90 border border-white/20 text-white text-[10.5px] font-semibold px-2 py-0.5 rounded">
-            <span>🛡 RAILBLOCK AI ACTIVE</span>
-          </div>
+        <div className="shrink-0 hidden md:flex items-center gap-2 pl-4">
+          <span className="text-[#ffba00] font-bold text-xs">●</span>
+          <span className="text-white text-[10.5px] font-semibold">SIMULATED RBAC ACTIVE</span>
         </div>
       </div>
 
-      {/* ── 4. Hero Section: Clean & Dignified Indian Railways Royal Navy ──── */}
-      <section 
-        className="text-white py-12 sm:py-16 px-4 text-center border-b border-[#000095] relative overflow-hidden shadow-sm"
-        style={{
-          backgroundColor: "#000075",
-          backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0) 18%, rgba(0, 0, 0, 0) 80%, rgba(0, 0, 0, 0.25) 100%)",
-        }}
-      >
-        <div className="relative max-w-4xl mx-auto z-10">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight flex flex-wrap items-center justify-center gap-2 sm:gap-3 leading-tight">
-            <span className="text-[#ffba00]">
-              रेल-ब्लॉक पोर्टल
-            </span>
-            <span className="text-white/60 font-light">|</span>
-            <span className="text-white">
-              RAILBLOCK PORTAL
-            </span>
-          </h2>
-
-          <p className="mt-3 text-sm sm:text-base text-slate-100 font-medium tracking-wide">
-            भारतीय रेल स्वचालित ब्लॉक नियोजन एवं गलियारा अनुरक्षण प्रणाली
-          </p>
-          <p className="text-xs sm:text-sm text-blue-200/90 font-normal tracking-wide mt-1">
-            AI-Powered Automatic Block Planning &amp; Corridor Maintenance Management System
-          </p>
-
-          <div className="mt-4 inline-flex items-center gap-2 bg-[#00005a]/80 border border-white/20 rounded-full px-3.5 py-1 text-[11px] text-blue-100 shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>NDLS – UMB – LDH Corridor • 312 km Double-Line Mainline</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5. SINGLE LOGIN LAYOUT WITH RBAC FOR ALL DEPARTMENTS ──────────── */}
-      <main className="flex-1 max-w-[880px] w-full mx-auto p-4 sm:p-8 flex flex-col justify-center">
+      {/* ── 4. Main Portal Login Layout ────────────────────────────────────── */}
+      <main className="flex-1 max-w-[1020px] w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
         
         <div className="bg-white border border-slate-300 rounded-2xl shadow-xl overflow-hidden">
           
-          {/* Card Title Header (#000075 with gentle top/bottom fade) */}
+          {/* Card Title Banner */}
           <div 
             className="text-white p-5 sm:p-6 border-b border-[#000095] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
             style={{
@@ -469,193 +257,199 @@ export default function LoginPage() {
             }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-[#ffba00] shadow-xs shrink-0">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+              <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-[#ffba00] shadow-xs shrink-0 text-xl">
+                <span>🚆</span>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-white leading-tight">
-                  विभागीय प्रवेश द्वार | Unified Single Sign-On
-                </h3>
+                <h2 className="text-base sm:text-lg font-bold text-white leading-tight">
+                  विभागीय प्रवेश द्वार | One-Click Departmental Access
+                </h2>
                 <p className="text-xs text-blue-100 mt-0.5">
-                  Role isolation and permissions strictly validated under IR-RBAC Tier 1.
+                  Select a departmental or executive role below to enter the live corridor scheduling portal instantly.
                 </p>
               </div>
             </div>
 
-            {/* Live Role Badge */}
             <div className="self-start sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#00005a] border border-white/20 text-xs shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-blue-100">Scope:</span>
-              <span className="font-bold text-[#ffba00]">{activeRole.deptKey}</span>
+              <span className="text-blue-100">Environment:</span>
+              <span className="font-bold text-[#ffba00]">Simulated RBAC</span>
             </div>
           </div>
 
-          {/* Login Form Body */}
-          <div className="p-6 sm:p-8">
+          {/* Form / Selection Body */}
+          <div className="p-5 sm:p-7">
             
-            {/* Department Quick Switcher Tabs (All 4 Departments) */}
+            {/* Error Message */}
+            {error && (
+              <div className="mb-5 bg-red-50 border border-red-300 rounded-xl p-3.5 text-xs text-red-700 flex items-start gap-2.5">
+                <span className="text-red-500 font-bold shrink-0 text-base">⚠</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Step 1: Select Your Role (Clean 1-Click Cards) */}
             <div className="mb-6">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                1. Select Department Scope / विभाग चुनें:
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {DEPARTMENT_ROLES.map((role) => {
-                  const isSelected = activeRole.deptKey === role.deptKey;
+              <div className="flex items-center justify-between mb-2.5">
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Choose Departmental Authority / पद एवं विभाग चुनें:
+                </label>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  Click any role card to view authority scope
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {DEMO_ROLES.map((role) => {
+                  const isSelected = selectedRole.id === role.id;
                   return (
-                    <button
-                      key={role.deptKey}
-                      type="button"
-                      onClick={() => handleSelectRole(role)}
-                      style={
+                    <div
+                      key={role.id}
+                      onClick={() => setSelectedRole(role)}
+                      className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between relative ${
                         isSelected
-                          ? {
-                              backgroundColor: "#000075",
-                              backgroundImage: "linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.2) 100%)",
-                            }
-                          : undefined
-                      }
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                        isSelected
-                          ? "text-white border-[#000075] shadow-md ring-2 ring-blue-500/40"
-                          : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
+                          ? "bg-blue-50/70 text-slate-900 border-[#000075] shadow-md ring-2 ring-[#000075]/20"
+                          : "bg-slate-50/80 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                          isSelected ? "bg-white/20 text-[#ffba00]" : "bg-slate-200 text-slate-600"
-                        }`}>
-                          {role.deptKey}
-                        </span>
-                        {isSelected && <span className="text-[#ffba00] text-xs font-bold">✓</span>}
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-2">
+                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${role.badgeClass}`}>
+                            {role.icon} {role.deptKey}
+                          </span>
+                          {isSelected && (
+                            <span className="text-[#000075] text-xs font-black bg-blue-100 px-1.5 py-0.5 rounded-full">
+                              Active ✓
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-xs font-bold text-slate-900 leading-tight">
+                          {role.name}
+                        </p>
+                        <p className="text-[11px] font-medium text-slate-600 mt-0.5">
+                          {role.officer}
+                        </p>
+                        <p className="text-[10.5px] text-slate-500">
+                          {role.designation}
+                        </p>
                       </div>
-                      <p className="text-xs font-bold leading-tight line-clamp-1">
-                        {role.name.split(" / ")[0]}
-                      </p>
-                      <p className={`text-[10.5px] mt-0.5 line-clamp-1 ${isSelected ? "text-blue-100" : "text-slate-500"}`}>
-                        {role.officer}
-                      </p>
-                    </button>
+
+                      <div className="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[10.5px]">
+                        <span className="text-slate-500">{role.division}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedRole(role);
+                            handleOneClickLogin(role);
+                          }}
+                          className="font-bold text-[#000075] hover:underline flex items-center gap-0.5"
+                        >
+                          <span>Enter</span>
+                          <span>→</span>
+                        </button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="mb-5 bg-red-50 border border-red-300 rounded-lg p-3 text-xs text-red-700 flex items-start gap-2.5">
-                <span className="text-red-500 font-bold shrink-0 text-sm">⚠</span>
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Single Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                
-                {/* Employee ID */}
-                <div>
-                  <label htmlFor="input-empid" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    2. Employee ID / कर्मचारी पहचान संख्या
-                  </label>
-                  <input
-                    id="input-empid"
-                    type="text"
-                    required
-                    value={empId}
-                    onChange={(e) => setEmpId(e.target.value)}
-                    placeholder="e.g. EMP-CTRL-001"
-                    className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-[#000075] focus:ring-2 focus:ring-[#000075]/20 font-mono transition-all"
-                  />
-                  <span className="text-[11px] text-slate-500 mt-1 block">
-                    Designated: <strong className="text-slate-800">{activeRole.officer}</strong> ({activeRole.designation})
-                  </span>
-                </div>
-
-                {/* Password */}
-                <div>
-                  <label htmlFor="input-password" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    3. System Password / पासवर्ड
-                  </label>
-                  <input
-                    id="input-password"
-                    type="password"
-                    required
-                    value={pass}
-                    onChange={(e) => setPass(e.target.value)}
-                    placeholder="Enter password"
-                    className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-[#000075] focus:ring-2 focus:ring-[#000075]/20 transition-all"
-                  />
-                  <span className="text-[11px] text-slate-500 mt-1 block">
-                    Demo password: <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">{activeRole.defaultPass}</code>
-                  </span>
-                </div>
-
-              </div>
-
-              {/* Dynamic RBAC Scope Box for Current Department */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
-                      IR-RBAC Tier 1 Authority Scope:
+            {/* Selected Role Authority Box */}
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs mb-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{selectedRole.icon}</span>
+                  <div>
+                    <span className="font-bold text-slate-900 text-xs">
+                      {selectedRole.name} • {selectedRole.officer}
                     </span>
-                    <span className="text-[10.5px] font-bold text-[#000075]">
-                      {activeRole.name}
-                    </span>
+                    <span className="text-[11px] text-slate-500 ml-2">({selectedRole.designation})</span>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400">SECURITY RULE #4.1</span>
                 </div>
-                <p className="text-slate-600 leading-relaxed">
-                  ✓ {activeRole.scopeSummary}
-                </p>
+                <span className="text-[10.5px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded self-start sm:self-auto">
+                  ● Verified Role Authority
+                </span>
               </div>
+              <p className="text-slate-600 text-[11.5px] leading-relaxed">
+                <strong>Operational Scope:</strong> {selectedRole.scopeSummary}
+              </p>
+            </div>
 
-              {/* Submit Button */}
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  id="unified-login-submit"
-                  disabled={loading}
-                  className="w-full bg-[#000075] hover:bg-[#000065] active:bg-[#000055] disabled:bg-slate-400 text-white font-bold py-3.5 px-4 rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-[#000095]"
-                >
-                  {loading ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Validating Departmental Credentials…</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Login to {activeRole.name.split(" / ")[0]} Console / प्रवेश करें</span>
-                      <span>→</span>
-                    </>
-                  )}
-                </button>
-              </div>
+            {/* Primary Action Button: 1-Click Login */}
+            <div>
+              <button
+                type="button"
+                id="one-click-login-btn"
+                disabled={loading}
+                onClick={() => handleOneClickLogin(selectedRole)}
+                className="w-full bg-[#000075] hover:bg-blue-900 active:bg-[#00005a] disabled:bg-slate-400 text-white font-bold py-3.5 px-4 rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-blue-900"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Establishing Secure Corridor Session…</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Enter Portal as {selectedRole.name.split(" / ")[0]} / प्रवेश करें</span>
+                    <span className="text-[#ffba00] font-black text-base">→</span>
+                  </>
+                )}
+              </button>
+            </div>
 
-            </form>
+            {/* Optional Manual Credential Entry Accordion */}
+            <div className="mt-5 pt-3 border-t border-slate-200 text-center">
+              <button
+                type="button"
+                onClick={() => setShowManualLogin((prev) => !prev)}
+                className="text-[11.5px] text-slate-500 hover:text-slate-800 font-medium cursor-pointer transition-colors inline-flex items-center gap-1.5"
+              >
+                <span>{showManualLogin ? "▲ Hide Custom Credential Form" : "▼ Use Manual Employee Credentials"}</span>
+              </button>
 
-            {/* Other Demo Profiles */}
-            <div className="mt-6 pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-              <span className="font-medium text-slate-600">Executive Demo Credentials:</span>
-              <div className="flex flex-wrap gap-2">
-                {DEMO_CREDENTIALS.filter((c) => ["ADMIN001", "DRM001", "OBS001"].includes(c.employeeId)).map((c) => (
+              {showManualLogin && (
+                <form onSubmit={handleManualSubmit} className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-left space-y-3 max-w-lg mx-auto animate-in fade-in duration-200">
+                  <p className="text-xs text-slate-600 font-medium">
+                    Enter employee credentials manually if testing custom credentials:
+                  </p>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                      Employee ID
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={manualEmpId}
+                      onChange={(e) => setManualEmpId(e.target.value)}
+                      placeholder="e.g. EMP-CTRL-001"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:border-[#000075]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                      System Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={manualPass}
+                      onChange={(e) => setManualPass(e.target.value)}
+                      placeholder="Enter system password"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:border-[#000075]"
+                    />
+                  </div>
                   <button
-                    key={c.employeeId}
-                    type="button"
-                    onClick={() => {
-                      setEmpId(c.employeeId);
-                      setPass(c.password);
-                      setError(null);
-                    }}
-                    className="text-[11px] px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 cursor-pointer font-medium transition-colors"
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-3 rounded-lg text-xs cursor-pointer transition-colors"
                   >
-                    {c.employeeId} ({c.name})
+                    Authenticate Credentials
                   </button>
-                ))}
-              </div>
+                </form>
+              )}
             </div>
 
           </div>
@@ -663,34 +457,34 @@ export default function LoginPage() {
 
       </main>
 
-      {/* ── 6. Government Compliance Footer ───────────────────────────────── */}
-      <footer className="bg-[#030712] text-slate-300 text-xs py-6 px-4 border-t border-black mt-auto">
-        <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+      {/* ── 5. Clean Government Compliance Footer ─────────────────────────── */}
+      <footer className="bg-[#030712] text-slate-300 text-xs py-5 px-4 border-t border-black mt-auto">
+        <div className="max-w-[1360px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left">
           <div>
             <p className="text-white font-semibold">
               Ministry of Railways · Government of India (रेल मंत्रालय · भारत सरकार)
             </p>
-            <p className="text-[11px] text-slate-300 mt-0.5">
-              Integrated with FOIS (Freight Operations Information System) &amp; CRIS (Centre for Railway Information Systems)
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Corridor Maintenance &amp; Autonomous Block Scheduling System · Northern Railway (Delhi Division)
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 text-[10.5px]">
             <span className="bg-[#000055] px-2.5 py-1 rounded text-slate-200 border border-white/20">
-              IR-RBAC Tier 1 Certified
+              Simulated RBAC Environment
             </span>
             <span className="bg-[#000055] px-2.5 py-1 rounded text-slate-200 border border-white/20">
-              TLS 1.3 Strict Enforced
+              Role-Isolated Permissions
             </span>
             <span className="text-[#facc15] font-mono font-medium">
-              RESTRICTED // OFFICIAL USE ONLY
+              OFFICIAL SYSTEM BUILD
             </span>
           </div>
         </div>
 
-        <div className="max-w-[1440px] mx-auto mt-4 pt-3 border-t border-white/10 text-[10.5px] text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© 2026 Ministry of Railways, Government of India. All rights reserved.</p>
-          <p>RailBlock AI · Autonomous Block Scheduling Engine · SIH26027</p>
+        <div className="max-w-[1360px] mx-auto mt-3 pt-3 border-t border-white/10 text-[10.5px] text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p>© 2026 Ministry of Railways, Government of India. Autonomous Block Scheduling Engine.</p>
+          <p className="font-mono text-slate-400">SIH26027 · RailBlock AI</p>
         </div>
       </footer>
 

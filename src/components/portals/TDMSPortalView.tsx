@@ -6,7 +6,7 @@ import type { WorkOrder } from "@/types";
 interface Props {
   workOrders: WorkOrder[];
   onAddWorkOrder: (wo: Partial<WorkOrder>) => void;
-  onDirectToCOA: () => void;
+  onDirectToCOA?: () => void;
 }
 
 const TDMS_SSR_OPTIONS = [
@@ -165,12 +165,10 @@ export default function TDMSPortalView({
           </p>
         </div>
 
-        <button
-          onClick={onDirectToCOA}
-          className="bg-rose-100 hover:bg-white text-rose-950 text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer whitespace-nowrap self-start md:self-auto"
-        >
-          View Central COA Decision Engine &rarr;
-        </button>
+        <div className="bg-rose-900/50 border border-rose-400/40 text-rose-100 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs whitespace-nowrap self-start md:self-auto flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>TDMS Dedicated Console</span>
+        </div>
       </div>
 
       {submittedMessage && (

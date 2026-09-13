@@ -77,6 +77,7 @@ export interface WorkOrder {
 }
 
 export interface ScheduledBlock {
+  id?:             string;
   clusterIds:      string[];
   isShadowBlock:   boolean;
   departments:     string[];

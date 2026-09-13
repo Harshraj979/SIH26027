@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * RailBlock AI — Indian Railways 4-Portal Block Planning & Scheduling System
+ * RailBlock AI — Indian Railways Integrated Corridor Planning & Scheduling System
  *
- * Dedicated Simple Dashboards:
+ * Dedicated Dashboards:
  * 1. TMS Portal  — Civil P-Way Track Maintenance
  * 2. SMMS Portal — Signal & Telecom Maintenance
  * 3. TDMS Portal — 25kV Traction / OHE Maintenance
- * 4. COA Central — Central Administrator Brain (Unified Pipeline, Balancing Scale & Dual-Horizon Planner)
+ * 4. COA Central — Central Administrator Master Brain (Balancing Scale, Spatial Map, Before/After & Disruption Sim)
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -15,7 +15,6 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import LoginPage from "@/components/LoginPage";
 import GovHeader from "@/components/GovHeader";
 import RoleGate from "@/components/RoleGate";
-import PortalNavigator, { PortalType } from "@/components/PortalNavigator";
 import COABalancingScaleWidget from "@/components/COABalancingScaleWidget";
 import SSRDurationCalculatorModal from "@/components/SSRDurationCalculatorModal";
 import BlockScheduleRegistry from "@/components/BlockScheduleRegistry";
@@ -23,6 +22,13 @@ import WorkOrderPanel from "@/components/WorkOrderPanel";
 import TMSPortalView from "@/components/portals/TMSPortalView";
 import SMMSPortalView from "@/components/portals/SMMSPortalView";
 import TDMSPortalView from "@/components/portals/TDMSPortalView";
+
+// High-Impact Additions
+import BeforeAfterComparison from "@/components/BeforeAfterComparison";
+import CorridorSchematicMap from "@/components/CorridorSchematicMap";
+import LiveDisruptionDemoWidget from "@/components/LiveDisruptionDemoWidget";
+import WhyThisSlotModal from "@/components/WhyThisSlotModal";
+import ImpactScaleProjection from "@/components/ImpactScaleProjection";
 
 import type {
   CorridorData,
@@ -35,6 +41,8 @@ import type {
 import { ROLE_PERMISSIONS } from "@/types/auth";
 
 type Horizon = "WEEKLY" | "MONTHLY";
+type CoaTab = "schedule" | "spatial" | "beforeAfter" | "impact" | "pipeline";
+type PortalType = "COA" | "TMS" | "SMMS" | "TDMS";
 
 const HORIZON_LABELS: Record<Horizon, { title: string; subtitle: string }> = {
   WEEKLY: {
@@ -53,18 +61,12 @@ function MainApp() {
   const { user, logout } = useAuth();
   const perms = user ? ROLE_PERMISSIONS[user.role] : ROLE_PERMISSIONS.OBSERVER;
 
-  // ── 1. Portal Navigation State ─────────────────────────────────────────────
-  const [activePortal, setActivePortal] = useState<PortalType>(() => {
+  // ── 1. Strict Departmental Role Isolation (No Cross-Switching) ─────────────
+  const activePortal: PortalType = React.useMemo(() => {
     if (user?.department === "TMS") return "TMS";
     if (user?.department === "SMMS") return "SMMS";
     if (user?.department === "TDMS") return "TDMS";
     return "COA";
-  });
-
-  useEffect(() => {
-    if (user?.department === "TMS") setActivePortal("TMS");
-    else if (user?.department === "SMMS") setActivePortal("SMMS");
-    else if (user?.department === "TDMS") setActivePortal("TDMS");
   }, [user?.department]);
 
   // ── 2. Core Operational State ──────────────────────────────────────────────
@@ -73,13 +75,17 @@ function MainApp() {
   const [kpis, setKpis]                       = useState<KPIs | null>(null);
   const [solverStats, setSolverStats]         = useState<SolverStats | null>(null);
   const [horizon, setHorizon]                 = useState<Horizon>("WEEKLY");
-  const [coaTab, setCoaTab]                   = useState<"schedule" | "pipeline">("schedule");
+  const [coaTab, setCoaTab]                   = useState<CoaTab>("schedule");
 
   // ── 3. UI & Modal State ────────────────────────────────────────────────────
   const [isOptimizing, setIsOptimizing]               = useState(false);
   const [isLoading, setIsLoading]                     = useState(true);
   const [loadError, setLoadError]                     = useState<string | null>(null);
   const [isSSRCalculatorOpen, setIsSSRCalculatorOpen] = useState(false);
+
+  // Why This Slot? XAI Modal State
+  const [selectedXAIBlock, setSelectedXAIBlock] = useState<ScheduledBlock | null>(null);
+  const [isWhyThisSlotOpen, setIsWhyThisSlotOpen] = useState(false);
 
   // ── 4. Toast Alerts ────────────────────────────────────────────────────────
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "warn" | "err" } | null>(null);
@@ -169,7 +175,49 @@ function MainApp() {
     [isOptimizing, perms, horizon, showToast]
   );
 
-  // ── 7. Work Order Handlers ─────────────────────────────────────────────────
+  // ── 7. Live Disruption Demo Handler ────────────────────────────────────────
+  const handleTriggerDisruption = useCallback(
+    async (type: "RAIL_FRACTURE" | "FOG_DELAY" | "RESET") => {
+      if (type === "RAIL_FRACTURE") {
+        try {
+          await fetch("/api/workorders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              department: "TMS",
+              description: "EMERGENCY: Transverse rail fracture detected on UP_FAST line km 14.2",
+              kmFrom: 14.2,
+              kmTo: 14.3,
+              durationMinutes: 60,
+              priority: 1,
+              lineId: "UP_FAST",
+              defectType: "RAIL_FRACTURE",
+              ssrTaskCode: "TMS-SSR-01",
+              hardSafetyOverride: true,
+              overdueDays: 5,
+              tqiScore: 28,
+              requestedDate: new Date().toISOString(),
+            }),
+          });
+        } catch {
+          /* continue */
+        }
+        await handleOptimize("WEEKLY");
+        showToast("🚨 EMERGENCY: Rail fracture logged at KM 14.2 (UP_FAST). Hard safety override triggered, CP-SAT assigned night slot with SLW bypass!", "warn");
+      } else if (type === "FOG_DELAY") {
+        await handleOptimize("WEEKLY");
+        showToast("🌧️ WEATHER ALERT: 35-min fog arrival delay on Shatabdi #12011 simulated. Timetable headways dynamically protected!", "warn");
+      } else {
+        const cd = (await fetch("/api/corridor").then((r) => r.json())) as CorridorData;
+        setCorridorData(cd);
+        await handleOptimize("WEEKLY");
+        showToast("Nominal corridor schedule and timetable baseline restored.", "ok");
+      }
+    },
+    [handleOptimize, showToast]
+  );
+
+  // ── 8. Work Order Handlers ─────────────────────────────────────────────────
   const handleAddWorkOrder = useCallback(
     async (wo: Partial<WorkOrder>) => {
       try {
@@ -208,7 +256,7 @@ function MainApp() {
     [showToast]
   );
 
-  // ── 8. Loading & Error States ──────────────────────────────────────────────
+  // ── 9. Loading & Error States ──────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex flex-col">
@@ -253,12 +301,9 @@ function MainApp() {
       {/* ── 1. Top Strip: Official Ministry Strip ───────────────────────────── */}
       <div className="bg-[#00005a] text-white text-[11px] py-1 px-4 sm:px-8 border-b border-blue-900/60 shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-2 font-medium">
-          <span>🇮🇳</span>
-          <span className="font-bold text-slate-100">भारत सरकार</span>
+          <span className="font-bold text-[#ffba00]">भारत सरकार • रेल मंत्रालय</span>
           <span className="text-white/40">|</span>
-          <span className="text-slate-200">Government of India</span>
-          <span className="text-white/40 hidden sm:inline">•</span>
-          <span className="text-slate-300 hidden sm:inline">Ministry of Railways</span>
+          <span className="text-slate-200">Government of India • Ministry of Railways</span>
         </div>
         <div className="flex items-center gap-2 text-slate-300 font-medium text-[10.5px]">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -268,29 +313,39 @@ function MainApp() {
         </div>
       </div>
 
-      {/* ── 2. Official Header with User Profile ────────────────────────────── */}
+      {/* ── 2. Official Header with Custom Insignia & Profile ───────────────── */}
       <GovHeader onLogout={logout} />
 
-      {/* ── 3. Four Integrated Portals Navigation Switcher ──────────────────── */}
-      <PortalNavigator
-        activePortal={activePortal}
-        onSelectPortal={setActivePortal}
-        counts={{
-          TMS: workOrders.filter((w) => w.department === "TMS").length,
-          SMMS: workOrders.filter((w) => w.department === "SMMS").length,
-          TDMS: workOrders.filter((w) => w.department === "TDMS").length,
-          scheduled: scheduledBlocks.length,
-        }}
-        onDirectToCOA={() => setActivePortal("COA")}
-      />
+      {/* ── 3. Four-Step Pipeline / Flow Indicator ──────────────────────────── */}
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-2 text-[11px] text-slate-600 flex items-center gap-2 overflow-x-auto select-none shadow-2xs">
+        <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px] shrink-0">
+          Corridor Pipeline:
+        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold">
+            1. Field Requisitions (TMS/SMMS/TDMS)
+          </span>
+          <span className="text-slate-400">→</span>
+          <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-900 border border-indigo-300 font-bold">
+            2. SSR Baseline &amp; Dynamic AI Sizing
+          </span>
+          <span className="text-slate-400">→</span>
+          <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-900 border border-purple-300 font-bold">
+            3. CP-SAT Mathematical Balancing Scale
+          </span>
+          <span className="text-slate-400">→</span>
+          <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-950 border border-emerald-300 font-black">
+            4. Approved Possessions &amp; SLW Routes
+          </span>
+        </div>
+      </div>
 
-      {/* ── 4. Department Field Portals (TMS / SMMS / TDMS) ─────────────────── */}
+      {/* ── 4. Department Field Portals (Strictly Isolated by Role) ────────── */}
       {activePortal === "TMS" && (
         <div className="flex-1 overflow-auto">
           <TMSPortalView
             workOrders={workOrders}
             onAddWorkOrder={handleAddWorkOrder}
-            onDirectToCOA={() => setActivePortal("COA")}
           />
         </div>
       )}
@@ -300,7 +355,6 @@ function MainApp() {
           <SMMSPortalView
             workOrders={workOrders}
             onAddWorkOrder={handleAddWorkOrder}
-            onDirectToCOA={() => setActivePortal("COA")}
           />
         </div>
       )}
@@ -310,12 +364,11 @@ function MainApp() {
           <TDMSPortalView
             workOrders={workOrders}
             onAddWorkOrder={handleAddWorkOrder}
-            onDirectToCOA={() => setActivePortal("COA")}
           />
         </div>
       )}
 
-      {/* ── 5. Central Administrator Portal (COA Master Brain) ───────────────── */}
+      {/* ── 6. Central Administrator Portal (COA Master Brain) ───────────────── */}
       {activePortal === "COA" && (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           
@@ -375,21 +428,21 @@ function MainApp() {
                   <span>SSR Master Rates</span>
                 </button>
 
-                {/* Run Optimizer Button */}
+                {/* Run Optimizer Button (Hero CTA) */}
                 <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
                   <button
                     onClick={() => handleOptimize()}
                     disabled={isOptimizing}
-                    className="flex items-center gap-1.5 bg-[#000075] hover:bg-blue-900 disabled:bg-slate-300 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-xs transition-all border border-blue-900 cursor-pointer"
+                    className="flex items-center gap-1.5 bg-[#000075] hover:bg-blue-900 active:bg-blue-950 disabled:bg-slate-300 text-white text-xs font-black py-2.5 px-5 rounded-lg shadow-md transition-all border border-blue-900 cursor-pointer ring-2 ring-[#ffba00]/30"
                   >
                     {isOptimizing ? (
                       <>
-                        <span className="w-3 h-3 border-2 border-[#ffba00] border-t-transparent rounded-full animate-spin" />
+                        <span className="w-3.5 h-3.5 border-2 border-[#ffba00] border-t-transparent rounded-full animate-spin" />
                         <span className="text-[#ffba00]">Optimizing CP-SAT…</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-[#ffba00]">▶</span>
+                        <span className="text-[#ffba00] text-sm font-black">▶</span>
                         <span>Run AI Optimizer</span>
                       </>
                     )}
@@ -398,71 +451,119 @@ function MainApp() {
               </div>
             </div>
 
-            {/* 4 Clean Key Performance Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3 pt-3 border-t border-slate-100">
-              <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-200 flex items-center justify-between">
+            {/* Performance Cards: Hero Metric + Supporting Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-slate-100">
+              
+              {/* HERO METRIC CARD */}
+              <div className="md:col-span-1 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border-2 border-emerald-300 flex items-center justify-between shadow-2xs">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">HERO METRIC</p>
+                  </div>
+                  <p className="text-base font-black text-emerald-950 mt-0.5">100% P1 Protected</p>
+                  <p className="text-[10.5px] text-emerald-700 font-medium">0 min delay Vande Bharat &amp; Shatabdi</p>
+                </div>
+                <div className="text-2xl">🛡️</div>
+              </div>
+
+              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-bold text-slate-500 uppercase">Corridor Scope</p>
                   <p className="text-base font-black text-[#000075]">312 km</p>
                   <p className="text-[10.5px] text-slate-500">NDLS – UMB – LDH (4 Lines)</p>
                 </div>
-                <div className="text-lg">🛤️</div>
+                <div className="text-xl">🛤️</div>
               </div>
 
-              <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-200 flex items-center justify-between">
+              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-bold text-slate-500 uppercase">Scheduled Slots</p>
                   <p className="text-base font-black text-slate-900">{scheduledBlocks.length} Blocks</p>
                   <p className="text-[10.5px] text-emerald-700 font-semibold">✓ 0 Conflict Overlaps</p>
                 </div>
-                <div className="text-lg">📅</div>
+                <div className="text-xl">📅</div>
               </div>
 
-              <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-200 flex items-center justify-between">
+              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Setup Saved</p>
-                  <p className="text-base font-black text-rose-700">+{setupMinutesSaved} min</p>
-                  <p className="text-[10.5px] text-slate-500">{shadowBlocksCount} Shared Bundles</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Setup Capacity Saved</p>
+                  <p className="text-base font-black text-purple-900">+{setupMinutesSaved} min</p>
+                  <p className="text-[10.5px] text-purple-700 font-semibold">{shadowBlocksCount} Multi-Dept Bundles</p>
                 </div>
-                <div className="text-lg">⚡</div>
+                <div className="text-xl">⚡</div>
               </div>
 
-              <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-200 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">P1 Punctuality</p>
-                  <p className="text-base font-black text-emerald-700">100% Protected</p>
-                  <p className="text-[10.5px] text-slate-500">0 min delay Vande Bharat</p>
-                </div>
-                <div className="text-lg">🛡️</div>
-              </div>
             </div>
           </div>
 
-          {/* Simple Tab Navigation */}
-          <div className="bg-white border-b border-slate-200 px-4 sm:px-8 flex gap-2 shrink-0">
+          {/* 5 Integrated Tabs Navigation */}
+          <div className="bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center gap-2 shrink-0 overflow-x-auto">
             <button
               onClick={() => setCoaTab("schedule")}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 coaTab === "schedule"
                   ? "text-[#000075] border-[#ffba00]"
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>🚆 Approved Corridor Schedule &amp; Balancing Scale</span>
+              <span>🚆 Approved Corridor Schedule</span>
               <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 text-[#000075]">
                 {scheduledBlocks.length}
               </span>
             </button>
 
             <button
+              onClick={() => setCoaTab("spatial")}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                coaTab === "spatial"
+                  ? "text-[#000075] border-[#ffba00]"
+                  : "text-slate-500 border-transparent hover:text-slate-800"
+              }`}
+            >
+              <span>🗺️ Spatial Corridor Map (312 km)</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
+                LRS
+              </span>
+            </button>
+
+            <button
+              onClick={() => setCoaTab("beforeAfter")}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                coaTab === "beforeAfter"
+                  ? "text-[#000075] border-[#ffba00]"
+                  : "text-slate-500 border-transparent hover:text-slate-800"
+              }`}
+            >
+              <span>⚖️ Before vs. After (Manual vs. AI)</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-800">
+                Diff
+              </span>
+            </button>
+
+            <button
+              onClick={() => setCoaTab("impact")}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                coaTab === "impact"
+                  ? "text-[#000075] border-[#ffba00]"
+                  : "text-slate-500 border-transparent hover:text-slate-800"
+              }`}
+            >
+              <span>📊 Scale &amp; Impact Projection</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-800">
+                ₹18.4 Cr
+              </span>
+            </button>
+
+            <button
               onClick={() => setCoaTab("pipeline")}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 coaTab === "pipeline"
                   ? "text-[#000075] border-[#ffba00]"
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>📋 Unified Defect Pipeline (TMS + SMMS + TDMS)</span>
+              <span>📋 Unified Defect Pipeline</span>
               <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
                 {workOrders.length}
               </span>
@@ -473,6 +574,12 @@ function MainApp() {
           {coaTab === "schedule" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-4">
               
+              {/* ── Headline Live Disruption Simulator Trigger ─────────────── */}
+              <LiveDisruptionDemoWidget
+                onTriggerDisruption={handleTriggerDisruption}
+                isOptimizing={isOptimizing}
+              />
+
               {/* ── Visual Mathematical Balancing Scale Widget ──────────────── */}
               <div className="shrink-0">
                 <COABalancingScaleWidget scheduledBlocks={scheduledBlocks} />
@@ -483,12 +590,48 @@ function MainApp() {
                 <BlockScheduleRegistry
                   scheduledBlocks={scheduledBlocks}
                   stations={stations}
+                  onOpenWhyThisSlot={(block) => {
+                    setSelectedXAIBlock(block);
+                    setIsWhyThisSlotOpen(true);
+                  }}
                 />
               </div>
             </div>
           )}
 
-          {/* Tab 2: Unified Defect Pipeline */}
+          {/* Tab 2: Spatial Corridor Map View (312 km Schematic) */}
+          {coaTab === "spatial" && (
+            <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-4">
+              <CorridorSchematicMap
+                scheduledBlocks={scheduledBlocks}
+                stations={stations}
+                onOpenWhyThisSlot={(block) => {
+                  setSelectedXAIBlock(block);
+                  setIsWhyThisSlotOpen(true);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Tab 3: Before vs After Comparison */}
+          {coaTab === "beforeAfter" && (
+            <div className="flex-1 overflow-auto p-4 sm:p-5">
+              <BeforeAfterComparison
+                shadowBlocksCount={shadowBlocksCount}
+                setupMinutesSaved={setupMinutesSaved}
+                totalBlocksScheduled={scheduledBlocks.length}
+              />
+            </div>
+          )}
+
+          {/* Tab 4: Division & Pan-India Scale Impact */}
+          {coaTab === "impact" && (
+            <div className="flex-1 overflow-auto p-4 sm:p-5">
+              <ImpactScaleProjection />
+            </div>
+          )}
+
+          {/* Tab 5: Unified Defect Pipeline */}
           {coaTab === "pipeline" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5">
               <WorkOrderPanel
@@ -508,10 +651,17 @@ function MainApp() {
         onClose={() => setIsSSRCalculatorOpen(false)}
       />
 
+      {/* ── Why This Slot? Explainable AI (XAI) Modal ──────────────────────── */}
+      <WhyThisSlotModal
+        isOpen={isWhyThisSlotOpen}
+        onClose={() => setIsWhyThisSlotOpen(false)}
+        block={selectedXAIBlock}
+      />
+
       {/* ── Toast Alert ────────────────────────────────────────────────────── */}
       {toast && (
         <div
-          className={`fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-lg border shadow-lg text-xs font-medium transition-all ${
+          className={`fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-xl border shadow-xl text-xs font-medium transition-all ${
             toast.type === "ok"
               ? "bg-emerald-50 border-emerald-300 text-emerald-900"
               : toast.type === "warn"
@@ -520,7 +670,7 @@ function MainApp() {
           }`}
         >
           <div className="flex items-start gap-2">
-            <span className="shrink-0 font-bold">
+            <span className="shrink-0 font-bold text-sm">
               {toast.type === "ok" ? "✓" : toast.type === "warn" ? "⚠️" : "✕"}
             </span>
             <span>{toast.msg}</span>

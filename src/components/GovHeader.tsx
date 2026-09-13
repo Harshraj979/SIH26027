@@ -83,25 +83,22 @@ export default function GovHeader({ onLogout }: Props) {
         
         {/* ── LEFT SIDE: Branding, Emblem & Corridor Identity ───────────────── */}
         <div className="flex items-center gap-2.5 shrink min-w-0">
-          {/* Emblem / Ashok Chakra */}
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center shrink-0 shadow-xs">
-            <svg viewBox="0 0 100 100" className="w-5 h-5 sm:w-6 sm:h-6">
-              <circle cx="50" cy="50" r="44" fill="none" stroke="#FF9933" strokeWidth="6" />
-              <circle cx="50" cy="50" r="8" fill="#ffffff" />
-              {Array.from({ length: 24 }).map((_, i) => {
-                const rad = (i * 15 * Math.PI) / 180;
-                return (
-                  <line
-                    key={i}
-                    x1={50 + 10 * Math.cos(rad)}
-                    y1={50 + 10 * Math.sin(rad)}
-                    x2={50 + 38 * Math.cos(rad)}
-                    y2={50 + 38 * Math.sin(rad)}
-                    stroke="#ffffff"
-                    strokeWidth="1.8"
-                  />
-                );
-              })}
+          {/* Custom RailBlock AI Insignia */}
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white/10 border border-[#ffba00]/40 flex items-center justify-center shrink-0 shadow-xs">
+            <svg viewBox="0 0 100 100" className="w-5 h-5 sm:w-6 sm:h-6" fill="none">
+              {/* Golden Outer Ring */}
+              <circle cx="50" cy="50" r="44" stroke="#ffba00" strokeWidth="3" />
+              {/* Saffron Overhead Catenary & Diamond Node */}
+              <path d="M50 14 L50 28 M34 22 L66 22" stroke="#ffba00" strokeWidth="2.5" strokeLinecap="round" />
+              <polygon points="50,20 54,26 50,32 46,26" fill="#ffba00" />
+              {/* Dual Parallel Converging Rail Tracks (Perspective) */}
+              <path d="M36 84 L44 40 M64 84 L56 40" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+              {/* Rail Sleepers */}
+              <line x1="39" y1="74" x2="61" y2="74" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+              <line x1="42" y1="62" x2="58" y2="62" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+              <line x1="44" y1="50" x2="56" y2="50" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+              {/* Center AI High-Speed Locomotive Nose */}
+              <path d="M46 42 Q50 36 54 42 L56 56 Q50 60 44 56 Z" fill="#ffba00" opacity="0.95" />
             </svg>
           </div>
 

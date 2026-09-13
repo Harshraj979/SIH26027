@@ -20,6 +20,7 @@ interface Props {
   scheduledBlocks: ScheduledBlock[];
   stations: Station[];
   onSwitchToChart?: () => void;
+  onOpenWhyThisSlot?: (block: ScheduledBlock) => void;
 }
 
 const DEPT_INFO: Record<string, { label: string; badgeClass: string; short: string }> = {
@@ -50,7 +51,12 @@ function getStationContext(kmFrom: number, kmTo: number, stations: Station[]): s
   return `${prevStation.code} – ${nextStation.code} Section`;
 }
 
-export default function BlockScheduleRegistry({ scheduledBlocks, stations, onSwitchToChart }: Props) {
+export default function BlockScheduleRegistry({
+  scheduledBlocks,
+  stations,
+  onSwitchToChart,
+  onOpenWhyThisSlot,
+}: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [deptFilter, setDeptFilter]   = useState<"ALL" | "SHADOW" | "TMS" | "SMMS" | "TDMS">("ALL");
   const [sortBy, setSortBy]           = useState<"TIME" | "CHAINAGE" | "RISK" | "DURATION">("TIME");
@@ -388,8 +394,21 @@ export default function BlockScheduleRegistry({ scheduledBlocks, stations, onSwi
 
                         {/* Justification / SHAP */}
                         <td className="py-3 px-4">
-                          <div className="text-[11px] text-slate-700 leading-relaxed max-w-xl">
-                            {block.justification || block.description || "Routine preventative maintenance window."}
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-[11px] text-slate-700 leading-relaxed max-w-lg">
+                              {block.justification || block.description || "Routine preventative maintenance window."}
+                            </span>
+                            {onOpenWhyThisSlot && (
+                              <button
+                                type="button"
+                                onClick={() => onOpenWhyThisSlot(block)}
+                                className="shrink-0 px-2.5 py-1 rounded-md bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 font-bold text-[10.5px] cursor-pointer transition-colors flex items-center gap-1 shadow-2xs"
+                                title="Open Explainable AI (XAI) mathematical justification"
+                              >
+                                <span>💡</span>
+                                <span>Why This Slot?</span>
+                              </button>
+                            )}
                           </div>
                         </td>
 
@@ -501,9 +520,20 @@ export default function BlockScheduleRegistry({ scheduledBlocks, stations, onSwi
                     </div>
 
                     {/* Explanation */}
-                    <p className="text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-2 line-clamp-3" title={block.justification || block.description}>
+                    <p className="text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-2 line-clamp-2" title={block.justification || block.description}>
                       {block.justification || block.description || "Routine maintenance possession."}
                     </p>
+
+                    {onOpenWhyThisSlot && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenWhyThisSlot(block)}
+                        className="w-full mt-2 py-1.5 px-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 font-bold text-[10.5px] cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                      >
+                        <span>💡</span>
+                        <span>Explain AI Slot Choice (XAI)</span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Card bottom meta */}
