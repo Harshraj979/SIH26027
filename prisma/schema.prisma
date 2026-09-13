@@ -112,15 +112,7 @@ model WorkOrder {
   // Multi-line and LRS Asset Address
   lineId            String    @default("UP_FAST") // UP_FAST | DN_FAST | UP_SLOW | DN_SLOW
   kpMarker          String?             // e.g. "KM 14 / 12-14"
-  sectionId         String?
-  railwayLocation   String?
-  assetType         String?
-  assetId           String?
   defectType        String?             // RAIL_FRACTURE | POINT_MACHINE_FAILURE | OHE_INSULATOR_BROKEN | etc.
-  defectSeverity    String?
-  inspectionMethod  String?
-  protectionStatus  String?
-  approvalStatus    String?             @default("PENDING")
 
   // Standard Schedule of Rates (SSR) & Dynamic AI Adjustment
   ssrTaskCode       String?             // e.g. "TMS-SSR-01"
@@ -307,3 +299,4 @@ model ExecutionLog {
   loggedByEngineer  String   @default("SSE/P-Way/UMB")
   createdAt         DateTime @default(now())
 }
+

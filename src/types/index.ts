@@ -62,16 +62,8 @@ export interface WorkOrder {
 
   // Multi-line and LRS Asset Address
   lineId?:          string; // UP_FAST | DN_FAST | UP_SLOW | DN_SLOW
-  kpMarker?:        string | null;
-  sectionId?:       string | null;
-  railwayLocation?: string | null;
-  assetType?:       string | null;
-  assetId?:         string | null;
+  kpMarker?:        string | null; // e.g. "KM 14 / 12-14"
   defectType?:      string | null;
-  defectSeverity?:  "CRITICAL" | "MAJOR" | "MINOR" | null;
-  inspectionMethod?: string | null;
-  protectionStatus?: "REQUIRED" | "IN_PLACE" | "NOT_REQUIRED" | null;
-  approvalStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
 
   // SSR & AI Duration Adjustments
   ssrTaskCode?:     string | null;
@@ -323,3 +315,4 @@ export interface CorridorData {
 export interface OptimizeResponse extends SolverResult {
   planDate: string;
 }
+

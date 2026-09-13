@@ -26,32 +26,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const lineId = body.lineId || body.trackId || "UP_FAST";
-    const isTms = body.department === "TMS";
-    const numeric = (value: unknown) => typeof value === "number" && Number.isFinite(value);
-    if (isTms) {
-      if (!body.sectionId || !body.railwayLocation || !body.assetType || !body.defectType ||
-          !body.inspectionMethod || !body.protectionStatus) {
-        return NextResponse.json({ error: "TMS section, railway location, asset, defect, inspection and protection fields are required" }, { status: 400 });
-      }
-      if (!numeric(body.kmFrom) || !numeric(body.kmTo) || body.kmFrom < 0 || body.kmTo <= body.kmFrom) {
-        return NextResponse.json({ error: "TMS kmFrom/kmTo must be numeric and kmTo must be greater than kmFrom" }, { status: 400 });
-      }
-      const sections: Record<string, [number, number]> = {
-        "NDLS-SNP": [0, 61], "SNP-PNP": [61, 90], "PNP-KKDE": [90, 124],
-        "KKDE-KUN": [124, 157], "KUN-UMB": [157, 197], "UMB-RPJ": [197, 224],
-        "RPJ-SIR": [224, 258], "SIR-LDH": [258, 312],
-      };
-      const range = sections[body.sectionId];
-      if (!range || body.kmFrom < range[0] || body.kmTo > range[1]) {
-        return NextResponse.json({ error: "TMS km range must be within the selected railway section" }, { status: 400 });
-      }
-      if (!numeric(body.tqiScore) || body.tqiScore < 0 || body.tqiScore > 100) {
-        return NextResponse.json({ error: "TMS TQI must be a number between 0 and 100" }, { status: 400 });
-      }
-      if (body.defectSeverity === "CRITICAL" && body.protectionStatus === "NOT_REQUIRED") {
-        return NextResponse.json({ error: "Critical TMS defects require protection before work" }, { status: 400 });
-      }
-    }
 
     // Locate track matching lineId or fallback
     let track = await prisma.track.findFirst({
@@ -95,22 +69,14 @@ export async function POST(req: NextRequest) {
         tqiScore:         parseFloat(body.tqiScore ?? 70),
         trackId:          track.id,
         lineId:           lineId,
-        kpMarker:        body.kpMarker || null,
-        sectionId:       body.sectionId || null,
-        railwayLocation: body.railwayLocation || null,
-        assetType:       body.assetType || null,
-        assetId:         body.assetId || null,
-        defectType:      body.defectType || (isTms ? null : "MAINTENANCE_DEMAND"),
-        defectSeverity:  body.defectSeverity || null,
-        inspectionMethod: body.inspectionMethod || null,
-        protectionStatus: body.protectionStatus || null,
-        approvalStatus:  body.approvalStatus || "PENDING",
+        kpMarker:         body.kpMarker || `KM ${kmFrom.toFixed(1)} / ${Math.floor(kmFrom * 2)}-${Math.floor(kmFrom * 2) + 2}`,
+        defectType:       body.defectType || "MAINTENANCE_DEMAND",
         ssrTaskCode:      body.ssrTaskCode || null,
         ssrStandardMin:   body.ssrStandardMin ? parseInt(body.ssrStandardMin) : durationMinutes,
         aiAdjustedMin:    body.aiAdjustedMin ? parseInt(body.aiAdjustedMin) : durationMinutes + transitMin,
         nearestDepot:     body.nearestDepot || depotName,
         transitMinutes:   transitMin,
-        hardSafetyOverride: body.hardSafetyOverride ?? (assetRisk >= 90.0 || body.defectSeverity === "CRITICAL"),
+        hardSafetyOverride: body.hardSafetyOverride ?? (assetRisk >= 90.0),
         horizonType:      body.horizonType || (assetRisk >= 70.0 ? "WEEKLY" : "MONTHLY"),
         explanation:      body.explanation || `Requisition from ${body.department} on ${lineId} line.`,
         assetRisk:        assetRisk,
