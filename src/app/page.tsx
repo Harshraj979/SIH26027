@@ -73,7 +73,7 @@ function MainApp() {
   const [kpis, setKpis]                       = useState<KPIs | null>(null);
   const [solverStats, setSolverStats]         = useState<SolverStats | null>(null);
   const [horizon, setHorizon]                 = useState<Horizon>("WEEKLY");
-  const [coaTab, setCoaTab]                   = useState<CoaTab>("decisionLab");
+  const [coaTab, setCoaTab]                   = useState<CoaTab>("schedule");
 
   // ── 3. UI & Modal State ────────────────────────────────────────────────────
   const [isOptimizing, setIsOptimizing]               = useState(false);
@@ -314,20 +314,6 @@ function MainApp() {
       {/* ── 2. Official Header with Custom Insignia & Profile ───────────────── */}
       <GovHeader onLogout={logout} />
 
-      {/* ── 3. Demo Guide Strip ───────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-[#000075]/5 to-indigo-50/80 border-b border-indigo-200/60 px-4 sm:px-8 py-2.5 flex flex-wrap items-center gap-3 select-none">
-        <span className="text-[10px] font-black uppercase tracking-wider text-[#000075] shrink-0">🎯 How It Works:</span>
-        <div className="flex items-center gap-1.5 shrink-0 text-[11px]">
-          <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-bold">① Field engineer submits defect</span>
-          <span className="text-slate-400 font-bold">→</span>
-          <span className="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-900 border border-indigo-300 font-bold">② AI scores &amp; sizes the block</span>
-          <span className="text-slate-400 font-bold">→</span>
-          <span className="px-2.5 py-1 rounded-lg bg-purple-100 text-purple-900 border border-purple-300 font-bold">③ Optimizer finds conflict-free slot</span>
-          <span className="text-slate-400 font-bold">→</span>
-          <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-300 font-black">④ Block approved — zero train delay</span>
-        </div>
-      </div>
-
       {/* ── 4. Department Field Portals (Strictly Isolated by Role) ────────── */}
       {activePortal === "TMS" && (
         <div className="flex-1 overflow-auto">
@@ -361,24 +347,24 @@ function MainApp() {
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           
           {/* Executive Control Strip */}
-          <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 shrink-0 shadow-2xs">
+          <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 shrink-0">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
               
               {/* Left: Corridor Context */}
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-[#000075] text-[#ffba00] border border-blue-900">
-                    COA CENTRAL ADMINISTRATOR
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#000075] text-white">
+                    COA Master Control
                   </span>
-                  <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                    NDLS–LDH Mainline (312 km Quadruple-Track)
+                  <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    Delhi Division • Quadruple Line
                   </span>
                 </div>
-                <h2 className="text-base sm:text-lg font-black text-[#000075] tracking-tight">
-                  AI-Powered Block Planning — NDLS to Ludhiana (312 km)
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                  Corridor Maintenance Possession Schedule
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
-                  Requests from <span className="font-semibold text-amber-800">Track (TMS)</span>, <span className="font-semibold text-blue-800">Signals (SMMS)</span>, and <span className="font-semibold text-red-800">Traction (TDMS)</span> are automatically scheduled into conflict-free maintenance windows.
+                <p className="text-xs text-slate-500 font-normal">
+                  Integrated multi-department possession planning across Track (TMS), S&amp;T (SMMS), and Traction (TDMS) for New Delhi – Ludhiana (312 km).
                 </p>
               </div>
 
@@ -394,36 +380,33 @@ function MainApp() {
                         setHorizon(h);
                         handleOptimize(h);
                       }}
-                      className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
                         horizon === h
                           ? "bg-white text-[#000075] shadow-xs"
                           : "text-slate-600 hover:text-slate-900 font-medium"
                       }`}
                       title={HORIZON_LABELS[h].subtitle}
                     >
-                      {h === "WEEKLY" ? "📅 This Week (Urgent)" : "📆 This Month (Routine)"}
+                      {h === "WEEKLY" ? "Weekly Schedule" : "Monthly Periodic"}
                     </button>
                   ))}
                 </div>
 
-
-
-                {/* Run Optimizer Button (Hero CTA) */}
+                {/* Run Optimizer Button */}
                 <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
                   <button
                     onClick={() => handleOptimize()}
                     disabled={isOptimizing}
-                    className="flex items-center gap-1.5 bg-[#000075] hover:bg-blue-900 active:bg-blue-950 disabled:bg-slate-300 text-white text-xs font-black py-2.5 px-5 rounded-lg shadow-md transition-all border border-blue-900 cursor-pointer ring-2 ring-[#ffba00]/30"
+                    className="flex items-center gap-2 bg-[#000075] hover:bg-blue-900 active:bg-blue-950 disabled:bg-slate-300 text-white text-xs font-semibold py-2 px-4 rounded-lg shadow-xs transition-all cursor-pointer"
                   >
                     {isOptimizing ? (
                       <>
-                        <span className="w-3.5 h-3.5 border-2 border-[#ffba00] border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[#ffba00]">Optimizing CP-SAT…</span>
+                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Computing Schedule…</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-[#ffba00] text-sm font-black">▶</span>
-                        <span>Run AI Optimizer</span>
+                        <span>Re-Compute Schedule</span>
                       </>
                     )}
                   </button>
@@ -431,106 +414,85 @@ function MainApp() {
               </div>
             </div>
 
-            {/* Performance Cards: Hero Metric + Supporting Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-slate-100">
-              
-              {/* HERO METRIC CARD */}
-              <div className="md:col-span-1 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border-2 border-emerald-300 flex items-center justify-between shadow-2xs">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">HERO METRIC</p>
-                  </div>
-                  <p className="text-base font-black text-emerald-950 mt-0.5">100% P1 Protected</p>
-                  <p className="text-[10.5px] text-emerald-700 font-medium">0 min delay Vande Bharat &amp; Shatabdi</p>
-                </div>
-                <div className="text-2xl">🛡️</div>
+            {/* Operational Telemetry Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-slate-100">
+              <div className="bg-slate-50/80 rounded-lg p-3 border border-slate-200">
+                <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">Corridor Span</p>
+                <p className="text-lg font-bold text-slate-900 mt-0.5">312 km</p>
+                <p className="text-[11px] text-slate-500">NDLS – UMB – LDH (4 Tracks)</p>
               </div>
 
-              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Corridor Scope</p>
-                  <p className="text-base font-black text-[#000075]">312 km</p>
-                  <p className="text-[10.5px] text-slate-500">NDLS – UMB – LDH (4 Lines)</p>
-                </div>
-                <div className="text-xl">🛤️</div>
+              <div className="bg-slate-50/80 rounded-lg p-3 border border-slate-200">
+                <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">Approved Possessions</p>
+                <p className="text-lg font-bold text-slate-900 mt-0.5">{scheduledBlocks.length} Blocks</p>
+                <p className="text-[11px] text-emerald-700 font-medium">0 Headway Conflicts</p>
               </div>
 
-              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Scheduled Slots</p>
-                  <p className="text-base font-black text-slate-900">{scheduledBlocks.length} Blocks</p>
-                  <p className="text-[10.5px] text-emerald-700 font-semibold">✓ 0 Conflict Overlaps</p>
-                </div>
-                <div className="text-xl">📅</div>
+              <div className="bg-slate-50/80 rounded-lg p-3 border border-slate-200">
+                <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">Punctuality Protection</p>
+                <p className="text-lg font-bold text-emerald-700 mt-0.5">100% P1 Trains</p>
+                <p className="text-[11px] text-slate-500">0 min Vande Bharat delay</p>
               </div>
 
-              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Setup Capacity Saved</p>
-                  <p className="text-base font-black text-purple-900">+{setupMinutesSaved} min</p>
-                  <p className="text-[10.5px] text-purple-700 font-semibold">{shadowBlocksCount} Multi-Dept Bundles</p>
-                </div>
-                <div className="text-xl">⚡</div>
+              <div className="bg-slate-50/80 rounded-lg p-3 border border-slate-200">
+                <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">Joint Possession Efficiency</p>
+                <p className="text-lg font-bold text-blue-900 mt-0.5">+{setupMinutesSaved} min</p>
+                <p className="text-[11px] text-slate-500">{shadowBlocksCount} Multi-Dept Possessions</p>
               </div>
-
             </div>
           </div>
 
           {/* Tab Navigation */}
           <div className="bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center gap-1 shrink-0 overflow-x-auto">
             <button
-              onClick={() => setCoaTab("decisionLab")}
-              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                coaTab === "decisionLab"
-                  ? "text-[#000075] border-[#ffba00]"
-                  : "text-slate-500 border-transparent hover:text-slate-800"
-              }`}
-            >
-              <span>🚨 Live Demo</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-800">
-                Start Here
-              </span>
-            </button>
-
-            <button
               onClick={() => setCoaTab("schedule")}
-              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
                 coaTab === "schedule"
-                  ? "text-[#000075] border-[#ffba00]"
+                  ? "text-[#000075] border-[#000075]"
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>📋 Scheduled Blocks</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-[#000075]">
+              <span>Possession Schedule</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 {scheduledBlocks.length}
               </span>
             </button>
 
             <button
               onClick={() => setCoaTab("spatial")}
-              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
                 coaTab === "spatial"
-                  ? "text-[#000075] border-[#ffba00]"
+                  ? "text-[#000075] border-[#000075]"
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>🗺️ Corridor Map</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+              <span>Corridor Schematic</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 312 km
               </span>
             </button>
 
             <button
-              onClick={() => setCoaTab("pipeline")}
-              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                coaTab === "pipeline"
-                  ? "text-[#000075] border-[#ffba00]"
+              onClick={() => setCoaTab("decisionLab")}
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                coaTab === "decisionLab"
+                  ? "text-[#000075] border-[#000075]"
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>📝 Work Orders</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+              <span>Contingency Simulation</span>
+            </button>
+
+            <button
+              onClick={() => setCoaTab("pipeline")}
+              className={`px-4 py-2.5 text-xs font-semibold border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                coaTab === "pipeline"
+                  ? "text-[#000075] border-[#000075]"
+                  : "text-slate-500 border-transparent hover:text-slate-800"
+              }`}
+            >
+              <span>Requisitions &amp; Work Orders</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 {workOrders.length}
               </span>
             </button>
@@ -555,19 +517,19 @@ function MainApp() {
           {/* Tab: Scheduled Blocks */}
           {coaTab === "schedule" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-3.5">
-              <div className="bg-gradient-to-r from-blue-50 via-slate-50 to-indigo-50 border border-blue-200/70 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs shrink-0">
+              <div className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                  <span className="font-bold text-slate-800">
-                    {scheduledBlocks.length} maintenance blocks scheduled — zero conflicts on NDLS–LDH (312 km).
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="font-semibold text-slate-800">
+                    {scheduledBlocks.length} maintenance possessions approved on NDLS–LDH (312 km).
                   </span>
-                  <span className="hidden md:inline text-slate-500 font-medium">• All Vande Bharat &amp; Shatabdi trains protected with 0 min delay</span>
+                  <span className="hidden md:inline text-slate-500">• Timetable headway and P1 passenger services fully protected</span>
                 </div>
                 <button
                   onClick={() => setCoaTab("decisionLab")}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-indigo-300 text-[#000075] hover:bg-indigo-50 font-bold transition-all shadow-2xs cursor-pointer text-xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 font-medium transition-all cursor-pointer text-xs"
                 >
-                  <span>🚨 Back to Live Demo &rarr;</span>
+                  <span>Test Disruption Impact &rarr;</span>
                 </button>
               </div>
               <div className="flex-1 min-h-[500px]">

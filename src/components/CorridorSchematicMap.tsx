@@ -132,9 +132,9 @@ export default function CorridorSchematicMap({
         </div>
 
         <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-          <span>🏢 Depot Location</span>
+          <span>Depot Location</span>
           <span>•</span>
-          <span>🚉 Key Station Junction</span>
+          <span>Key Station Junction</span>
         </div>
       </div>
 

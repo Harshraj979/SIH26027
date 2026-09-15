@@ -10,9 +10,8 @@ interface Props {
 
 export default function COABalancingScaleWidget({
   scheduledBlocks,
-  onTriggerDisruptionDemo,
 }: Props) {
-  const [selectedOption, setSelectedOption] = useState<number>(2); // Default to Option 3 (Winner)
+  const [selectedOption, setSelectedOption] = useState<number>(2); // Default to Option 3 (Selected)
 
   const shadowCount = scheduledBlocks.filter((b) => b.isShadowBlock).length;
   const setupMinutesSaved = shadowCount * 20;
@@ -20,188 +19,144 @@ export default function COABalancingScaleWidget({
   const slotOptions = [
     {
       id: 0,
-      title: "Option 1: Daytime Peak Clubbing",
-      time: "10:00 AM – 12:00 PM (120 min)",
-      impact: "Delays Express Train #12497 by 30 mins & halts oncoming freight",
-      penalty: -500,
-      penaltyLabel: "-500 (Very Bad)",
-      clubbingBonus: 0,
-      setupSaved: 20,
-      finalScore: -500,
+      title: "Window 1: Morning Peak Possession",
+      time: "10:00 – 12:00 (120 min)",
+      impact: "Delays Express #12497 by 30 min and halts down-line freight",
+      penaltyLabel: "High Disruption Cost (-500)",
+      clubbingBonus: "0 pts",
+      setupSaved: "20 min",
       decision: "REJECTED",
-      badgeColor: "bg-rose-100 text-rose-800 border-rose-300",
-      reason: "Blind clubbing in morning peak causes cascading traffic jam across entire Delhi division. Mathematical penalty outweighs setup saving.",
-      icon: "❌",
+      badgeColor: "bg-rose-50 text-rose-800 border-rose-200",
+      reason: "Peak morning traffic window causes cascading delays on New Delhi suburban and intercity passenger movements. Delay penalties exceed setup savings.",
     },
     {
       id: 1,
-      title: "Option 2: Off-Peak Afternoon Slot",
-      time: "04:00 PM – 05:35 PM (95 min)",
-      impact: "Delays Freight Train #51220 by 15 mins (Acceptable)",
-      penalty: -15,
-      penaltyLabel: "-15 (Acceptable)",
-      clubbingBonus: 0,
-      setupSaved: 0,
-      finalScore: -15,
-      decision: "BACKUP OPTION",
-      badgeColor: "bg-amber-100 text-amber-800 border-amber-300",
-      reason: "Feasible daytime contingency slot. Only freight is impacted, but does not achieve zero-impact punctuality.",
-      icon: "⚠️",
+      title: "Window 2: Afternoon Off-Peak Window",
+      time: "16:00 – 17:35 (95 min)",
+      impact: "Re-routes Goods Train #51220 via loop (+15 min)",
+      penaltyLabel: "Acceptable Delay (-15)",
+      clubbingBonus: "0 pts",
+      setupSaved: "0 min",
+      decision: "FEASIBLE CONTINGENCY",
+      badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+      reason: "Feasible secondary slot during off-peak passenger lull. Minor freight re-routing is required, but timetable punctuality is largely preserved.",
     },
     {
       id: 2,
-      title: "Option 3: Dynamic Window Matching (Night Gap)",
-      time: "02:15 AM – 04:15 AM (120 min)",
-      impact: "Natural Timetable Gap: 0 Passenger & 0 Express Trains Delayed",
-      penalty: 0,
-      penaltyLabel: "0 (Zero Disruption)",
-      clubbingBonus: 100,
-      setupSaved: 20,
-      finalScore: 100,
-      decision: "WINNER (SELECTED)",
-      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300 ring-2 ring-emerald-500/30",
-      reason: "Zero train delay cost + Multi-department shadow co-location (+100 Bonus) + 20m setup saved. Track closed ONCE.",
-      icon: "🏆",
+      title: "Window 3: Synchronized Night Window",
+      time: "02:15 – 04:15 (120 min)",
+      impact: "Natural Timetable Gap: 0 Passenger & 0 Express Services Affected",
+      penaltyLabel: "Zero Delay Cost (0)",
+      clubbingBonus: "+100 pts",
+      setupSaved: "20 min",
+      decision: "ASSIGNED (OPTIMAL)",
+      badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200 font-bold",
+      reason: "Aligns with natural traffic lull. Co-locates Track (TMS) and S&T (SMMS) into a single 20-minute track isolation, saving line closure overhead with zero passenger delays.",
     },
   ];
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
       {/* Header */}
       <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-base">⚖️</span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#000075]">
-              Mathematical Balancing Scale: Setup Efficiency vs. Cascading Delay Penalty
-            </h3>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-[#000075] border border-blue-200">
-              Scenario 3 Dynamic Window Matching
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            The AI balances <strong>Setup Efficiency (+20 min saved per bundle)</strong> against <strong>Cascading Delay Penalties (Exponential VIP train cost)</strong>.
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+            Possession Window Evaluation &amp; Trade-Off Matrix
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            How candidate time windows are evaluated: balancing joint-possession setup efficiency against passenger delay impact.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
-            Total Setup Overhead Saved: <strong>+{setupMinutesSaved} mins</strong> ({shadowCount} Bundles)
-          </span>
+        <div className="text-xs font-medium text-slate-700 bg-white px-3 py-1 rounded border border-slate-200">
+          Joint Possessions Active: <strong className="text-blue-900">{shadowCount}</strong> (+{setupMinutesSaved} min overhead saved)
         </div>
       </div>
 
-      {/* Visual Balance Scale Graphic & Metrics */}
-      <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 bg-gradient-to-b from-slate-50/50 to-white">
-        {/* Left Scale Pan: Setup Efficiency */}
-        <div className="bg-emerald-50/50 rounded-xl border border-emerald-200 p-4 relative overflow-hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-              <span>🔧</span> Setup Efficiency Side
+      {/* Trade-Off Balance Overview */}
+      <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 bg-slate-50/40">
+        <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+              Setup Co-Location Efficiency
             </span>
-            <span className="text-xs font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-              +20 min / Bundle
+            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+              +20 min saved / bundle
             </span>
           </div>
-          <p className="text-xs text-slate-700 leading-relaxed">
-            Every block possession requires <strong>20 minutes of fixed track lockdown</strong> (detonator placement, switch clamps, 25kV OHE earthing). Grouping TMS + SMMS + TDMS saves repeated shutdowns.
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Each track possession requires 20 minutes of isolation overhead (switch clamping, OHE de-energisation, and flag protection). Synchronising Track, Signal, and OHE works into one window avoids repeated closures.
           </p>
-          <div className="mt-3 flex items-center gap-3 text-xs font-semibold text-emerald-900">
-            <div className="bg-white/80 px-2.5 py-1 rounded-lg border border-emerald-300">
-              ⚡ Clubbing Bonus: <strong>+100 pts</strong>
-            </div>
-            <div className="bg-white/80 px-2.5 py-1 rounded-lg border border-emerald-300">
-              🛡️ Line Closed <strong>ONCE</strong>
-            </div>
-          </div>
         </div>
 
-        {/* Right Scale Pan: Cascading Delay Penalty */}
-        <div className="bg-rose-50/50 rounded-xl border border-rose-200 p-4 relative overflow-hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-rose-900 uppercase tracking-wider flex items-center gap-1.5">
-              <span>🛑</span> Cascading Delay Penalty Side
+        <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+              Timetable Punctuality Protection
             </span>
-            <span className="text-xs font-black text-rose-700 bg-rose-100 px-2 py-0.5 rounded">
-              Exponential Cost
+            <span className="text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">
+              Priority 1 Strict Buffer
             </span>
           </div>
-          <p className="text-xs text-slate-700 leading-relaxed">
-            Blind clubbing during peak morning hours delays passenger trains, creating a cascading traffic jam. If Delay Cost &gt; Setup Bonus, the AI <strong>rejects the daytime block</strong> and shifts to night gaps!
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Possessions during passenger peaks create ripple delays across the division. Candidate windows with high train impact penalties are automatically discarded in favour of natural timetable gaps.
           </p>
-          <div className="mt-3 flex items-center gap-3 text-xs font-semibold text-rose-900">
-            <div className="bg-white/80 px-2.5 py-1 rounded-lg border border-rose-300">
-              🚄 P1 Vande Bharat: <strong>Zero Delay Tolerance</strong>
-            </div>
-            <div className="bg-white/80 px-2.5 py-1 rounded-lg border border-rose-300">
-              ⚠️ Peak Curfew: <strong>Enforced</strong>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* The 3 Candidate Slot Comparison Cards */}
+      {/* Candidate Slots Table / Cards */}
       <div className="p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
-            Candidate Slot Evaluation Matrix (CP-SAT Mathematical Ranking)
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-700">
+            Evaluated Possession Candidates
           </p>
-          <span className="text-[11px] text-slate-400">Click any option to inspect decision logic</span>
+          <span className="text-[11px] text-slate-400">Select any candidate to review evaluation rationale</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {slotOptions.map((opt) => {
-            const isChosen = selectedOption === opt.id;
-            const isWinner = opt.decision.includes("WINNER");
+            const isSelected = selectedOption === opt.id;
+            const isAssigned = opt.decision.includes("ASSIGNED");
 
             return (
               <div
                 key={opt.id}
                 onClick={() => setSelectedOption(opt.id)}
-                className={`p-4 rounded-xl border transition-all cursor-pointer relative flex flex-col justify-between ${
-                  isWinner
-                    ? "bg-emerald-50/30 border-emerald-300 shadow-xs"
-                    : isChosen
-                    ? "bg-blue-50/30 border-[#000075] shadow-xs"
-                    : "bg-slate-50/40 border-slate-200 hover:bg-white"
+                className={`p-4 rounded-lg border transition-all cursor-pointer flex flex-col justify-between ${
+                  isAssigned
+                    ? "bg-emerald-50/20 border-emerald-300 ring-1 ring-emerald-200"
+                    : isSelected
+                    ? "bg-slate-50 border-[#000075]"
+                    : "bg-white border-slate-200 hover:border-slate-300"
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg">{opt.icon}</span>
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${opt.badgeColor}`}>
+                    <span className="text-xs font-bold text-slate-900">{opt.title}</span>
+                    <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border ${opt.badgeColor}`}>
                       {opt.decision}
                     </span>
                   </div>
 
-                  <h4 className="text-xs font-bold text-slate-900">{opt.title}</h4>
-                  <p className="text-[11px] font-mono font-semibold text-blue-900 mt-0.5">{opt.time}</p>
+                  <p className="text-xs font-mono font-semibold text-blue-900">{opt.time}</p>
 
-                  <div className="mt-3 space-y-1.5 text-[11px]">
+                  <div className="mt-3 space-y-1.5 text-xs">
                     <div className="flex justify-between text-slate-600">
                       <span>Traffic Impact:</span>
-                      <span className="font-semibold text-slate-800 text-right max-w-[150px] truncate">{opt.impact}</span>
+                      <span className="font-medium text-slate-800 text-right max-w-[150px] truncate">{opt.impact}</span>
                     </div>
                     <div className="flex justify-between text-slate-600">
-                      <span>Disruption Penalty:</span>
-                      <span className={`font-bold tabular-nums ${opt.penalty < 0 ? "text-rose-700" : "text-emerald-700"}`}>
-                        {opt.penaltyLabel}
-                      </span>
+                      <span>Delay Penalty:</span>
+                      <span className="font-semibold text-slate-800">{opt.penaltyLabel}</span>
                     </div>
                     <div className="flex justify-between text-slate-600">
-                      <span>Clubbing Bonus:</span>
-                      <span className="font-bold text-emerald-700 tabular-nums">+{opt.clubbingBonus} pts</span>
-                    </div>
-                    <div className="flex justify-between border-t border-slate-200 pt-1.5 font-bold">
-                      <span className="text-slate-800">Final Slot Score:</span>
-                      <span className={`tabular-nums ${opt.finalScore > 0 ? "text-emerald-700" : opt.finalScore === 0 ? "text-slate-700" : "text-rose-700"}`}>
-                        {opt.finalScore > 0 ? `+${opt.finalScore}` : opt.finalScore}
-                      </span>
+                      <span>Co-Location Saving:</span>
+                      <span className="font-semibold text-slate-800">{opt.setupSaved}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-3 pt-2.5 border-t border-slate-200/80 text-[10.5px] text-slate-500 italic leading-relaxed">
+                <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-600 leading-relaxed">
                   {opt.reason}
                 </div>
               </div>
