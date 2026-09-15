@@ -39,6 +39,7 @@ import { ROLE_PERMISSIONS } from "@/types/auth";
 
 type Horizon = "WEEKLY" | "MONTHLY";
 type CoaTab = "schedule" | "decisionLab" | "spatial" | "pipeline";
+
 type PortalType = "COA" | "TMS" | "SMMS" | "TDMS";
 
 const HORIZON_LABELS: Record<Horizon, { title: string; subtitle: string }> = {
@@ -72,7 +73,7 @@ function MainApp() {
   const [kpis, setKpis]                       = useState<KPIs | null>(null);
   const [solverStats, setSolverStats]         = useState<SolverStats | null>(null);
   const [horizon, setHorizon]                 = useState<Horizon>("WEEKLY");
-  const [coaTab, setCoaTab]                   = useState<CoaTab>("schedule");
+  const [coaTab, setCoaTab]                   = useState<CoaTab>("decisionLab");
 
   // ── 3. UI & Modal State ────────────────────────────────────────────────────
   const [isOptimizing, setIsOptimizing]               = useState(false);
@@ -313,27 +314,17 @@ function MainApp() {
       {/* ── 2. Official Header with Custom Insignia & Profile ───────────────── */}
       <GovHeader onLogout={logout} />
 
-      {/* ── 3. Four-Step Pipeline / Flow Indicator ──────────────────────────── */}
-      <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-2 text-[11px] text-slate-600 flex items-center gap-2 overflow-x-auto select-none shadow-2xs">
-        <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px] shrink-0">
-          Corridor Pipeline:
-        </span>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold">
-            1. Field Requisitions (TMS/SMMS/TDMS)
-          </span>
-          <span className="text-slate-400">→</span>
-          <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-900 border border-indigo-300 font-bold">
-            2. SSR Baseline &amp; Dynamic AI Sizing
-          </span>
-          <span className="text-slate-400">→</span>
-          <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-900 border border-purple-300 font-bold">
-            3. CP-SAT Mathematical Balancing Scale
-          </span>
-          <span className="text-slate-400">→</span>
-          <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-950 border border-emerald-300 font-black">
-            4. Approved Possessions &amp; SLW Routes
-          </span>
+      {/* ── 3. Demo Guide Strip ───────────────────────────────────────────── */}
+      <div className="bg-gradient-to-r from-[#000075]/5 to-indigo-50/80 border-b border-indigo-200/60 px-4 sm:px-8 py-2.5 flex flex-wrap items-center gap-3 select-none">
+        <span className="text-[10px] font-black uppercase tracking-wider text-[#000075] shrink-0">🎯 How It Works:</span>
+        <div className="flex items-center gap-1.5 shrink-0 text-[11px]">
+          <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 font-bold">① Field engineer submits defect</span>
+          <span className="text-slate-400 font-bold">→</span>
+          <span className="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-900 border border-indigo-300 font-bold">② AI scores &amp; sizes the block</span>
+          <span className="text-slate-400 font-bold">→</span>
+          <span className="px-2.5 py-1 rounded-lg bg-purple-100 text-purple-900 border border-purple-300 font-bold">③ Optimizer finds conflict-free slot</span>
+          <span className="text-slate-400 font-bold">→</span>
+          <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-300 font-black">④ Block approved — zero train delay</span>
         </div>
       </div>
 
@@ -384,10 +375,10 @@ function MainApp() {
                   </span>
                 </div>
                 <h2 className="text-base sm:text-lg font-black text-[#000075] tracking-tight">
-                  Unified AI Prioritisation &amp; Multi-Horizon Optimization Engine
+                  AI-Powered Block Planning — NDLS to Ludhiana (312 km)
                 </h2>
                 <p className="text-xs text-slate-500 font-medium">
-                  Directing requisitions from <span className="font-semibold text-amber-800">TMS Track</span>, <span className="font-semibold text-blue-800">SMMS Signals</span>, and <span className="font-semibold text-red-800">TDMS Traction</span> into conflict-free maintenance blocks.
+                  Requests from <span className="font-semibold text-amber-800">Track (TMS)</span>, <span className="font-semibold text-blue-800">Signals (SMMS)</span>, and <span className="font-semibold text-red-800">Traction (TDMS)</span> are automatically scheduled into conflict-free maintenance windows.
                 </p>
               </div>
 
@@ -410,20 +401,12 @@ function MainApp() {
                       }`}
                       title={HORIZON_LABELS[h].subtitle}
                     >
-                      {h === "WEEKLY" ? "📅 Weekly Plan (> 70 Prio)" : "📆 Monthly Plan (< 50 Prio)"}
+                      {h === "WEEKLY" ? "📅 This Week (Urgent)" : "📆 This Month (Routine)"}
                     </button>
                   ))}
                 </div>
 
-                {/* SSR Rates Blueprint Modal Button */}
-                <button
-                  onClick={() => setIsSSRCalculatorOpen(true)}
-                  className="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors cursor-pointer"
-                  title="Standard Schedule of Rates manual baseline & AI adjustment breakdown"
-                >
-                  <span>⏱️</span>
-                  <span>SSR Master Rates</span>
-                </button>
+
 
                 {/* Run Optimizer Button (Hero CTA) */}
                 <RoleGate allow={["SYSTEM_ADMIN", "DRM"]}>
@@ -494,22 +477,8 @@ function MainApp() {
             </div>
           </div>
 
-          {/* 4 Integrated Tabs Navigation */}
+          {/* Tab Navigation */}
           <div className="bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center gap-1 shrink-0 overflow-x-auto">
-            <button
-              onClick={() => setCoaTab("schedule")}
-              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                coaTab === "schedule"
-                  ? "text-[#000075] border-[#ffba00]"
-                  : "text-slate-500 border-transparent hover:text-slate-800"
-              }`}
-            >
-              <span>🚆 Approved Corridor Schedule</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 text-[#000075]">
-                {scheduledBlocks.length}
-              </span>
-            </button>
-
             <button
               onClick={() => setCoaTab("decisionLab")}
               className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
@@ -518,9 +487,23 @@ function MainApp() {
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>⚖️ Decision Lab &amp; Disruption Sim</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-800">
-                Live
+              <span>🚨 Live Demo</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                Start Here
+              </span>
+            </button>
+
+            <button
+              onClick={() => setCoaTab("schedule")}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+                coaTab === "schedule"
+                  ? "text-[#000075] border-[#ffba00]"
+                  : "text-slate-500 border-transparent hover:text-slate-800"
+              }`}
+            >
+              <span>📋 Scheduled Blocks</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-[#000075]">
+                {scheduledBlocks.length}
               </span>
             </button>
 
@@ -532,9 +515,9 @@ function MainApp() {
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>🗺️ Spatial Corridor Map (312 km)</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
-                LRS
+              <span>🗺️ Corridor Map</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                312 km
               </span>
             </button>
 
@@ -546,49 +529,14 @@ function MainApp() {
                   : "text-slate-500 border-transparent hover:text-slate-800"
               }`}
             >
-              <span>📋 Unified Defect Pipeline</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
+              <span>📝 Work Orders</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
                 {workOrders.length}
               </span>
             </button>
           </div>
 
-          {/* Tab 1: Clean Approved Corridor Schedule Registry */}
-          {coaTab === "schedule" && (
-            <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-3.5">
-              
-              {/* Quick Status Bar with Direct Shortcut to Decision Lab */}
-              <div className="bg-gradient-to-r from-blue-50 via-slate-50 to-indigo-50 border border-blue-200/70 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                  <span className="font-bold text-slate-800">
-                    Live Corridor Timetable: {scheduledBlocks.length} possessions scheduled conflict-free on NDLS–LDH (312 km).
-                  </span>
-                  <span className="hidden md:inline text-slate-500 font-medium">• 100% P1 Trains (Vande Bharat &amp; Shatabdi) Protected at 0 min delay</span>
-                </div>
-                <button
-                  onClick={() => setCoaTab("decisionLab")}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-indigo-300 text-[#000075] hover:bg-indigo-50 font-bold transition-all shadow-2xs cursor-pointer text-xs"
-                >
-                  <span>⚖️ Disruption Simulator &amp; Scale &rarr;</span>
-                </button>
-              </div>
-
-              {/* Scheduled Blocks Registry */}
-              <div className="flex-1 min-h-[500px]">
-                <BlockScheduleRegistry
-                  scheduledBlocks={scheduledBlocks}
-                  stations={stations}
-                  onOpenWhyThisSlot={(block) => {
-                    setSelectedXAIBlock(block);
-                    setIsWhyThisSlotOpen(true);
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Tab 2: Decision Lab — Balancing Scale & Disruption Simulator */}
+          {/* Tab: Live Demo → decisionLab (shown first) */}
           {coaTab === "decisionLab" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-4">
               {/* Headline Live Disruption Simulator */}
@@ -603,6 +551,39 @@ function MainApp() {
               </div>
             </div>
           )}
+
+          {/* Tab: Scheduled Blocks */}
+          {coaTab === "schedule" && (
+            <div className="flex-1 overflow-auto p-4 sm:p-5 flex flex-col gap-3.5">
+              <div className="bg-gradient-to-r from-blue-50 via-slate-50 to-indigo-50 border border-blue-200/70 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <span className="font-bold text-slate-800">
+                    {scheduledBlocks.length} maintenance blocks scheduled — zero conflicts on NDLS–LDH (312 km).
+                  </span>
+                  <span className="hidden md:inline text-slate-500 font-medium">• All Vande Bharat &amp; Shatabdi trains protected with 0 min delay</span>
+                </div>
+                <button
+                  onClick={() => setCoaTab("decisionLab")}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-indigo-300 text-[#000075] hover:bg-indigo-50 font-bold transition-all shadow-2xs cursor-pointer text-xs"
+                >
+                  <span>🚨 Back to Live Demo &rarr;</span>
+                </button>
+              </div>
+              <div className="flex-1 min-h-[500px]">
+                <BlockScheduleRegistry
+                  scheduledBlocks={scheduledBlocks}
+                  stations={stations}
+                  onOpenWhyThisSlot={(block) => {
+                    setSelectedXAIBlock(block);
+                    setIsWhyThisSlotOpen(true);
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+
 
           {/* Tab 3: Spatial Corridor Map View (312 km Schematic) */}
           {coaTab === "spatial" && (

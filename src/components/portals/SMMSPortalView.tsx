@@ -295,7 +295,7 @@ export default function SMMSPortalView({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Railway Section (LRS Span)
+                    Railway Section
                   </label>
                   <select
                     value={selectedSection.id}
@@ -307,7 +307,7 @@ export default function SMMSPortalView({
                   >
                     {SECTIONS.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.id} — {s.name} ({s.kmStart}–{s.kmEnd} km)
+                        {s.name} ({s.kmStart}–{s.kmEnd} km)
                       </option>
                     ))}
                   </select>
@@ -315,17 +315,17 @@ export default function SMMSPortalView({
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Track Identification
+                    Track Line
                   </label>
                   <select
                     value={lineId}
                     onChange={(e) => setLineId(e.target.value)}
                     className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                   >
-                    <option value="UP_FAST">UP_FAST (Main Express Line - 160 km/h)</option>
-                    <option value="DN_FAST">DN_FAST (Main Express Line - 160 km/h)</option>
-                    <option value="UP_SLOW">UP_SLOW (Commuter &amp; Freight - 110 km/h)</option>
-                    <option value="DN_SLOW">DN_SLOW (Commuter &amp; Freight - 110 km/h)</option>
+                    <option value="UP_FAST">UP Main Line (Express)</option>
+                    <option value="DN_FAST">DN Main Line (Express)</option>
+                    <option value="UP_SLOW">UP Loop Line (Commuter/Freight)</option>
+                    <option value="DN_SLOW">DN Loop Line (Commuter/Freight)</option>
                   </select>
                 </div>
               </div>
@@ -359,33 +359,18 @@ export default function SMMSPortalView({
                 </div>
               </div>
 
-              {/* Description & Overdue Days */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div className="sm:col-span-3">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Fault Description &amp; Interlocking Symptoms
-                  </label>
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Provide signalling fault details..."
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Days Overdue
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={overdueDays}
-                    onChange={(e) => setOverdueDays(e.target.value)}
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
+              {/* Fault Description (full width) */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Fault Description &amp; Symptoms
+                </label>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe the signalling fault observed..."
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                />
               </div>
 
               {/* Cross-Department Dependency Checkbox */}

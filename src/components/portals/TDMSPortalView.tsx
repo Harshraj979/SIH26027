@@ -214,14 +214,14 @@ export default function TDMSPortalView({
         <div className="px-5 py-3.5 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-              <span>⚡</span> Traction Requisition &amp; Power Block (PTW) Console
+              <span>⚡</span> Submit Traction / OHE Request
             </h3>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Standardized insulator replacement, catenary tensioning, and mast anti-corrosion metrics
+              Select fault type and location — the AI automatically calculates power block duration &amp; priority score
             </p>
           </div>
-          <span className="text-xs font-bold text-rose-900 bg-rose-100/70 px-2.5 py-1 rounded-full border border-rose-300">
-            TRD SSR Active
+          <span className="text-xs font-bold text-emerald-900 bg-emerald-100/70 px-2.5 py-1 rounded-full border border-emerald-300">
+            AI Scoring Active
           </span>
         </div>
 
@@ -333,75 +333,32 @@ export default function TDMSPortalView({
                 </div>
               </div>
 
-              {/* Chainage KM & Traction Mast Marker */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Chainage KM
-                  </label>
-                  <input
-                    type="text"
-                    value={kmMarker}
-                    onChange={(e) => setKmMarker(e.target.value)}
-                    placeholder="e.g. 14.4"
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Traction Mast Marker
-                  </label>
-                  <input
-                    type="text"
-                    value={mastMarker}
-                    onChange={(e) => setMastMarker(e.target.value)}
-                    placeholder="e.g. 16-18"
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
-                  />
-                </div>
+              {/* KM Post only */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Kilometre Post (KM)
+                </label>
+                <input
+                  type="text"
+                  value={kmMarker}
+                  onChange={(e) => setKmMarker(e.target.value)}
+                  placeholder="e.g. 14.4"
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                />
               </div>
 
-              {/* Description, Days Overdue & Power Block Sector */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                <div className="sm:col-span-5">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    OHE Catenary Description
-                  </label>
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Provide OHE defect notes..."
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
-                  />
-                </div>
-
-                <div className="sm:col-span-5">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Power Block (PTW) Sector
-                  </label>
-                  <input
-                    type="text"
-                    value={ptwSector}
-                    onChange={(e) => setPtwSector(e.target.value)}
-                    placeholder="e.g. OHE-TSS-PNP (Substation Feeder)"
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Overdue
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={overdueDays}
-                    onChange={(e) => setOverdueDays(e.target.value)}
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
-                  />
-                </div>
+              {/* Description only */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  OHE Defect Description
+                </label>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe the overhead wire or insulator defect observed..."
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                />
               </div>
 
               {/* Live AI Sizing & Dispatch Card */}

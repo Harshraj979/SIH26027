@@ -42,23 +42,37 @@ export default function LiveDisruptionDemoWidget({
       
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         
-        {/* Left Side: Title & Description */}
+        {/* Left Side: Step Guide */}
         <div className="max-w-xl">
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
             <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
               Live Interactive Demonstration
             </span>
-            <span className="text-[10px] text-blue-200 font-mono">
-              Real-Time Reactive Dispatch
-            </span>
           </div>
 
-          <h3 className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-2">
-            <span>⚡ One-Click Disruption &amp; Re-Optimization Engine</span>
+          <h3 className="text-sm sm:text-base font-black tracking-tight text-white mb-2">
+            ⚡ AI Re-Optimization Engine — 1-Click Demo
           </h3>
-          <p className="text-xs text-blue-100/80 font-medium mt-1 leading-relaxed">
-            Test the solver live against sudden real-world corridor disruptions. Watch the CP-SAT engine dynamically clear train paths and compute Single-Line Working (SLW) crossover bypasses without human delay.
+
+          {/* 3-Step Demo Guide */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-5 h-5 rounded-full bg-amber-500 text-white font-black text-[10px] flex items-center justify-center shrink-0">1</span>
+              <span className="text-amber-200 font-semibold">Go to <strong className="text-white">TMS / SMMS / TDMS portal</strong> → fill 3 fields → click &quot;Forward to COA&quot;</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-5 h-5 rounded-full bg-indigo-400 text-white font-black text-[10px] flex items-center justify-center shrink-0">2</span>
+              <span className="text-blue-200 font-semibold">Come back here → click <strong className="text-white">&quot;Run AI Optimizer&quot;</strong> above ↑</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-5 h-5 rounded-full bg-emerald-500 text-white font-black text-[10px] flex items-center justify-center shrink-0">3</span>
+              <span className="text-emerald-200 font-semibold">Switch to <strong className="text-white">&quot;Scheduled Blocks&quot;</strong> → click any block → see AI explain its decision</span>
+            </div>
+          </div>
+
+          <p className="text-[10.5px] text-blue-100/60 mt-2 leading-relaxed">
+            Or trigger a crisis below to watch the AI re-plan the entire corridor in real time.
           </p>
         </div>
 

@@ -216,14 +216,14 @@ export default function TMSPortalView({
         <div className="px-5 py-3.5 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-              <span>📋</span> Requisition Dispatch Console (SSR &amp; Linear Referencing)
+              <span>📋</span> Submit Maintenance Request
             </h3>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Standardized Indian Railways metrics automatically calculate duration, crew transit &amp; priority score
+              Select defect type and location — the AI automatically calculates duration, crew transit &amp; priority score
             </p>
           </div>
-          <span className="text-xs font-bold text-amber-900 bg-amber-100/70 px-2.5 py-1 rounded-full border border-amber-300">
-            SSR Blueprint Active
+          <span className="text-xs font-bold text-emerald-900 bg-emerald-100/70 px-2.5 py-1 rounded-full border border-emerald-300">
+            AI Scoring Active
           </span>
         </div>
 
@@ -293,14 +293,14 @@ export default function TMSPortalView({
             {/* ── RIGHT COLUMN: Location, Parameters & AI Dispatch (7 Cols) ─── */}
             <div className="lg:col-span-7 flex flex-col gap-4">
               <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                2. Linear Location &amp; Operational Parameters
+                2. Location
               </label>
 
               {/* Section & Line Selection */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Railway Section (LRS Span)
+                    Railway Section
                   </label>
                   <select
                     value={selectedSection.id}
@@ -312,7 +312,7 @@ export default function TMSPortalView({
                   >
                     {SECTIONS.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.id} — {s.name} ({s.kmStart}–{s.kmEnd} km)
+                        {s.name} ({s.kmStart}–{s.kmEnd} km)
                       </option>
                     ))}
                   </select>
@@ -320,91 +320,47 @@ export default function TMSPortalView({
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Track Identification
+                    Track Line
                   </label>
                   <select
                     value={lineId}
                     onChange={(e) => setLineId(e.target.value)}
                     className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   >
-                    <option value="UP_FAST">UP_FAST (Express 160 km/h)</option>
-                    <option value="DN_FAST">DN_FAST (Express 160 km/h)</option>
-                    <option value="UP_SLOW">UP_SLOW (Commuter/Freight 110 km/h)</option>
-                    <option value="DN_SLOW">DN_SLOW (Commuter/Freight 110 km/h)</option>
+                    <option value="UP_FAST">UP Main Line (Express)</option>
+                    <option value="DN_FAST">DN Main Line (Express)</option>
+                    <option value="UP_SLOW">UP Loop Line (Commuter/Freight)</option>
+                    <option value="DN_SLOW">DN Loop Line (Commuter/Freight)</option>
                   </select>
                 </div>
               </div>
 
-              {/* KM Post, Mast, & Overdue Days */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Chainage KM Post
-                  </label>
-                  <input
-                    type="text"
-                    value={kmMarker}
-                    onChange={(e) => setKmMarker(e.target.value)}
-                    placeholder="e.g. 14.2"
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    OHE Mast Numbers
-                  </label>
-                  <input
-                    type="text"
-                    value={mastMarker}
-                    onChange={(e) => setMastMarker(e.target.value)}
-                    placeholder="e.g. 12-14"
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Days Overdue / Lag
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={overdueDays}
-                    onChange={(e) => setOverdueDays(e.target.value)}
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
+              {/* KM Post only */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Kilometre Post (KM)
+                </label>
+                <input
+                  type="text"
+                  value={kmMarker}
+                  onChange={(e) => setKmMarker(e.target.value)}
+                  placeholder="e.g. 14.2"
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                />
               </div>
 
-              {/* Defect Description & TQI Score */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div className="sm:col-span-3">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Defect Field Description &amp; Visual Notes
-                  </label>
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Provide track inspection observations..."
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    TQI Score
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={tqiScore}
-                    onChange={(e) => setTqiScore(e.target.value)}
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
+              {/* Description only */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Field Observation / Notes
+                </label>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe what you observed in the field..."
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                />
               </div>
 
               {/* Live AI Sizing & Dispatch Card */}
