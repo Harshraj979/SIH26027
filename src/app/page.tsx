@@ -7,7 +7,7 @@
  * 1. TMS Portal  — Civil P-Way Track Maintenance
  * 2. SMMS Portal — Signal & Telecom Maintenance
  * 3. TDMS Portal — 25kV Traction / OHE Maintenance
- * 4. COA Central — Central Administrator Master Brain (Balancing Scale, Spatial Map, Before/After & Disruption Sim)
+ * 4. COA Central — Central Administrator Master Brain (Balancing Scale, Spatial Map, & Disruption Sim)
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -23,12 +23,9 @@ import TMSPortalView from "@/components/portals/TMSPortalView";
 import SMMSPortalView from "@/components/portals/SMMSPortalView";
 import TDMSPortalView from "@/components/portals/TDMSPortalView";
 
-// High-Impact Additions
-import BeforeAfterComparison from "@/components/BeforeAfterComparison";
 import CorridorSchematicMap from "@/components/CorridorSchematicMap";
 import LiveDisruptionDemoWidget from "@/components/LiveDisruptionDemoWidget";
 import WhyThisSlotModal from "@/components/WhyThisSlotModal";
-import ImpactScaleProjection from "@/components/ImpactScaleProjection";
 
 import type {
   CorridorData,
@@ -41,7 +38,7 @@ import type {
 import { ROLE_PERMISSIONS } from "@/types/auth";
 
 type Horizon = "WEEKLY" | "MONTHLY";
-type CoaTab = "schedule" | "decisionLab" | "spatial" | "beforeAfter" | "impact" | "pipeline";
+type CoaTab = "schedule" | "decisionLab" | "spatial" | "pipeline";
 type PortalType = "COA" | "TMS" | "SMMS" | "TDMS";
 
 const HORIZON_LABELS: Record<Horizon, { title: string; subtitle: string }> = {
@@ -497,7 +494,7 @@ function MainApp() {
             </div>
           </div>
 
-          {/* 6 Integrated Tabs Navigation */}
+          {/* 4 Integrated Tabs Navigation */}
           <div className="bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center gap-1 shrink-0 overflow-x-auto">
             <button
               onClick={() => setCoaTab("schedule")}
@@ -538,34 +535,6 @@ function MainApp() {
               <span>🗺️ Spatial Corridor Map (312 km)</span>
               <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
                 LRS
-              </span>
-            </button>
-
-            <button
-              onClick={() => setCoaTab("beforeAfter")}
-              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                coaTab === "beforeAfter"
-                  ? "text-[#000075] border-[#ffba00]"
-                  : "text-slate-500 border-transparent hover:text-slate-800"
-              }`}
-            >
-              <span>🔄 Before vs. After (Manual vs. AI)</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-purple-100 text-purple-800">
-                Diff
-              </span>
-            </button>
-
-            <button
-              onClick={() => setCoaTab("impact")}
-              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                coaTab === "impact"
-                  ? "text-[#000075] border-[#ffba00]"
-                  : "text-slate-500 border-transparent hover:text-slate-800"
-              }`}
-            >
-              <span>📊 Scale &amp; Impact Projection</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-800">
-                ₹18.4 Cr
               </span>
             </button>
 
@@ -649,25 +618,7 @@ function MainApp() {
             </div>
           )}
 
-          {/* Tab 4: Before vs After Comparison */}
-          {coaTab === "beforeAfter" && (
-            <div className="flex-1 overflow-auto p-4 sm:p-5">
-              <BeforeAfterComparison
-                shadowBlocksCount={shadowBlocksCount}
-                setupMinutesSaved={setupMinutesSaved}
-                totalBlocksScheduled={scheduledBlocks.length}
-              />
-            </div>
-          )}
-
-          {/* Tab 5: Division & Pan-India Scale Impact */}
-          {coaTab === "impact" && (
-            <div className="flex-1 overflow-auto p-4 sm:p-5">
-              <ImpactScaleProjection />
-            </div>
-          )}
-
-          {/* Tab 6: Unified Defect Pipeline */}
+          {/* Tab 4: Unified Defect Pipeline */}
           {coaTab === "pipeline" && (
             <div className="flex-1 overflow-auto p-4 sm:p-5">
               <WorkOrderPanel
