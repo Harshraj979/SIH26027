@@ -314,7 +314,6 @@ function MainApp() {
       {/* ── 2. Official Header with Custom Insignia & Profile ───────────────── */}
       <GovHeader onLogout={logout} />
 
-
       {/* ── 4. Department Field Portals (Strictly Isolated by Role) ────────── */}
       {activePortal === "TMS" && (
         <div className="flex-1 overflow-auto">

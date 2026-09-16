@@ -91,11 +91,7 @@ export default function TMSPortalView({
   const [kmMarker, setKmMarker] = useState("14.2");
   const [mastMarker, setMastMarker] = useState("12-14");
   const [description, setDescription] = useState("Severe rail fracture observed on mainline track");
-  const [reportedDate, setReportedDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 4);
-    return d.toISOString().split("T")[0];
-  });
+  const [overdueDays, setOverdueDays] = useState("4");
   const [tqiScore, setTqiScore] = useState("38");
   const [submittedMessage, setSubmittedMessage] = useState<string | null>(null);
 
@@ -111,29 +107,11 @@ export default function TMSPortalView({
   // Live priority preview
   const isCritical = selectedSSR.severity === "Critical" || selectedSSR.code === "TMS-SSR-01";
   const isRoutine = selectedSSR.severity === "Minor";
-  
-  const getOverdueDays = (dateStr: string) => {
-    if (!dateStr) return 0;
-    const [year, month, day] = dateStr.split("-").map(Number);
-    if (!year || !month || !day) return 0;
-    const reported = new Date(year, month - 1, day);
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    return Math.max(0, Math.floor((today.getTime() - reported.getTime()) / (1000 * 60 * 60 * 24)));
-  };
-  const overdueDaysNum = getOverdueDays(reportedDate);
-  const overdueDays = overdueDaysNum.toString();
-
-  const parsedTqi = parseFloat(tqiScore || "60");
-  const tqiPenalty = (100 - parsedTqi) * 0.4;
-  
-  const baseRisk = selectedSSR.defaultRisk;
-  const lineSpeedPenalty = (lineId === "UP_FAST" || lineId === "DN_FAST") ? 8.0 : 0.0;
-  const transitPenalty = transitMin * 0.15;
-  const overdueMultiplier = overdueDaysNum * (isCritical ? 1.5 : 0.8);
-
-  const rawPreviewRisk = (baseRisk * 0.5) + lineSpeedPenalty + tqiPenalty + transitPenalty + overdueMultiplier;
-  const previewRisk = Math.min(99.9, rawPreviewRisk);
+  const previewRisk = isCritical
+    ? Math.min(99.9, 92.0 + 0.8 * parseInt(overdueDays || "0"))
+    : isRoutine
+    ? Math.min(25.0, 10.0 + 0.3 * parseInt(overdueDays || "0"))
+    : Math.min(85.0, selectedSSR.defaultRisk + 0.5 * parseInt(overdueDays || "0"));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,11 +152,11 @@ export default function TMSPortalView({
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-5 text-slate-800">
       
       {/* ── 1. Top Header Banner ────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-blue-900/80">
+      <div className="bg-gradient-to-r from-amber-950 via-amber-900 to-amber-800 text-white rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-amber-800/80">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-xl">🛤️</span>
-            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-orange-600/70 text-orange-100 border border-orange-500/60">
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-700/70 text-amber-200 border border-amber-600/60">
               IR-RBAC • Civil P-Way Portal
             </span>
             <span className="text-[10px] text-amber-200/70 font-mono">
@@ -188,13 +166,13 @@ export default function TMSPortalView({
           <h2 className="text-lg sm:text-xl font-black tracking-tight">
             Track Management System (TMS) • Civil Engineering Console
           </h2>
-          <p className="text-xs text-blue-100/80 mt-1 max-w-2xl font-medium">
+          <p className="text-xs text-amber-100/80 mt-1 max-w-2xl font-medium">
             Section Officer: <strong className="text-white">Sh. Harsh Savalia, Sr. DEN (Delhi Division)</strong> • NDLS – UMB – LDH Mainline (312 km) • USFD, Track Geometry &amp; Rail Weld Safety
           </p>
         </div>
 
-        <div className="bg-blue-900/60 border border-blue-400/40 text-blue-100 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs whitespace-nowrap self-start md:self-auto flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+        <div className="bg-amber-900/60 border border-amber-400/40 text-amber-100 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs whitespace-nowrap self-start md:self-auto flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span>TMS Field Console Active</span>
         </div>
       </div>
@@ -357,46 +335,18 @@ export default function TMSPortalView({
                 </div>
               </div>
 
-              {/* KM Post, Mast, & Overdue Days */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Chainage KM Post
-                  </label>
-                  <input
-                    type="text"
-                    value={kmMarker}
-                    onChange={(e) => setKmMarker(e.target.value)}
-                    placeholder="e.g. 14.2"
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    OHE Mast Numbers
-                  </label>
-                  <input
-                    type="text"
-                    value={mastMarker}
-                    onChange={(e) => setMastMarker(e.target.value)}
-                    placeholder="e.g. 12-14"
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Reported Date
-                  </label>
-                  <input
-                    type="date"
-                    max={new Date().toISOString().split("T")[0]}
-                    value={reportedDate}
-                    onChange={(e) => setReportedDate(e.target.value)}
-                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
+              {/* KM Post only */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Kilometre Post (KM)
+                </label>
+                <input
+                  type="text"
+                  value={kmMarker}
+                  onChange={(e) => setKmMarker(e.target.value)}
+                  placeholder="e.g. 14.2"
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                />
               </div>
 
               {/* Description only */}
@@ -414,10 +364,10 @@ export default function TMSPortalView({
               </div>
 
               {/* Live AI Sizing & Dispatch Card */}
-              <div className="p-3.5 rounded-xl bg-gradient-to-r from-slate-50 via-blue-50/30 to-blue-50/60 border border-blue-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-gradient-to-r from-slate-50 via-amber-50/30 to-amber-50/60 border border-amber-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
                     <span className="font-bold text-slate-900 text-xs">Dynamic AI Sizing:</span>
                     <span className="text-[11px] text-slate-600">
                       Nearest Depot: <strong>{depotName.split("(")[0]}</strong> (+{transitMin}m transit)
