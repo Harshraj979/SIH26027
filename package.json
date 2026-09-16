@@ -16,11 +16,13 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@libsql/client": "^0.18.0",
     "@prisma/adapter-better-sqlite3": "^7.10.0",
+    "@prisma/adapter-libsql": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/react-plotly.js": "^2.6.4",
-    "better-sqlite3": "12.6.2",
+    "better-sqlite3": "^11.3.0",
     "dotenv": "^17.4.2",
     "next": "16.3.4",
     "plotly.js": "^4.0.0",

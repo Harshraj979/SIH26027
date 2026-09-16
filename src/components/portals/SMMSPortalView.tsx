@@ -91,7 +91,11 @@ export default function SMMSPortalView({
   const [kmMarker, setKmMarker] = useState("90.1");
   const [pointId, setPointId] = useState("Point 104-B (Panipat Jn)");
   const [description, setDescription] = useState("Rotary motor lock detection failure on turnout switch");
-  const [overdueDays, setOverdueDays] = useState("3");
+  const [reportedDate, setReportedDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 3);
+    return d.toISOString().split("T")[0];
+  });
   const [requireOHECut, setRequireOHECut] = useState(true);
   const [submittedMessage, setSubmittedMessage] = useState<string | null>(null);
 
@@ -104,9 +108,27 @@ export default function SMMSPortalView({
   const transitMin = dist <= 2.0 ? 5 : Math.round((dist / 30.0) * 60);
 
   const isCritical = selectedSSR.severity === "Critical";
-  const previewRisk = isCritical
-    ? Math.min(99.0, 91.0 + 1.2 * parseInt(overdueDays || "0"))
-    : Math.min(75.0, selectedSSR.defaultRisk + 0.5 * parseInt(overdueDays || "0"));
+  
+  const getOverdueDays = (dateStr: string) => {
+    if (!dateStr) return 0;
+    const [year, month, day] = dateStr.split("-").map(Number);
+    if (!year || !month || !day) return 0;
+    const reported = new Date(year, month - 1, day);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.max(0, Math.floor((today.getTime() - reported.getTime()) / (1000 * 60 * 60 * 24)));
+  };
+  const overdueDaysNum = getOverdueDays(reportedDate);
+  const overdueDays = overdueDaysNum.toString();
+
+  const baseRisk = selectedSSR.defaultRisk;
+  const lineSpeedPenalty = (lineId === "UP_FAST" || lineId === "DN_FAST") ? 8.0 : 0.0;
+  const oheCutPenalty = requireOHECut ? 10.0 : 0.0;
+  const transitPenalty = transitMin * 0.15;
+  const overdueMultiplier = overdueDaysNum * (isCritical ? 1.8 : 0.6);
+
+  const rawPreviewRisk = (baseRisk * 0.5) + lineSpeedPenalty + oheCutPenalty + transitPenalty + overdueMultiplier;
+  const previewRisk = Math.min(99.9, rawPreviewRisk);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,12 +168,12 @@ export default function SMMSPortalView({
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-5 text-slate-800">
       
-      {/* ── 1. Header Banner ──────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-blue-950 via-indigo-950 to-blue-900 text-white rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-blue-900/80">
+      {/* ── 1. Top Header Banner ────────────────────────────────────────────── */}
+      <div className="bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-blue-900/80">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xl">🚥</span>
-            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-blue-800/70 text-blue-200 border border-blue-700/60">
+            <span className="text-xl">📡</span>
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-600/70 text-emerald-100 border border-emerald-500/60">
               IR-RBAC • S&amp;T Signalling Portal
             </span>
             <span className="text-[10px] text-blue-200/70 font-mono">
@@ -162,7 +184,7 @@ export default function SMMSPortalView({
             Signal Maintenance Management System (SMMS) • S&amp;T Console
           </h2>
           <p className="text-xs text-blue-100/80 mt-1 max-w-2xl font-medium">
-            Section Officer: <strong className="text-white">Smt. Khush Patel, Sr. DSTE / Signalling (Delhi Division)</strong> • SIL-4 Interlocking, Digital Axle Counters &amp; Point Machine Assurance
+            Section Officer: <strong className="text-white">Sh. S.K. Sharma, Sr. DSTE (Delhi Division)</strong> • NDLS – UMB – LDH Mainline (312 km) • Signals, Electronic Interlocking &amp; Telecom
           </p>
         </div>
 
@@ -359,18 +381,33 @@ export default function SMMSPortalView({
                 </div>
               </div>
 
-              {/* Fault Description (full width) */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Fault Description &amp; Symptoms
-                </label>
-                <input
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe the signalling fault observed..."
-                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
-                />
+              {/* Description & Overdue Days */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="sm:col-span-3">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Fault Description &amp; Interlocking Symptoms
+                  </label>
+                  <input
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Provide signalling fault details..."
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Reported Date
+                  </label>
+                  <input
+                    type="date"
+                    max={new Date().toISOString().split("T")[0]}
+                    value={reportedDate}
+                    onChange={(e) => setReportedDate(e.target.value)}
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
               </div>
 
               {/* Cross-Department Dependency Checkbox */}
@@ -393,7 +430,7 @@ export default function SMMSPortalView({
               <div className="p-3.5 rounded-xl bg-gradient-to-r from-slate-50 via-blue-50/30 to-blue-50/60 border border-blue-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="font-bold text-slate-900 text-xs">Dynamic AI Sizing:</span>
                     <span className="text-[11px] text-slate-600">
                       Nearest Base: <strong>{depotName.split("(")[0]}</strong> (+{transitMin}m transit)
